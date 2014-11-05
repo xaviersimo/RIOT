@@ -290,16 +290,20 @@ static inline void irq_handler(uint8_t uartnum, USART_TypeDef *dev)
 {
     if (dev->SR & USART_SR_RXNE) {
         char data = (char)dev->DR;
-        config[uartnum].rx_cb(config[uartnum].arg, data);
+        if (config[uartnum].rx_cb != NULL) {
+        	config[uartnum].rx_cb(config[uartnum].arg, data);
+        }
     }
     else if (dev->SR & USART_SR_ORE) {
         /* ORE is cleared by reading SR and DR sequentially */
         dev->DR;
     }
     else if (dev->SR & USART_SR_TXE) {
-        if (config[uartnum].tx_cb(config[uartnum].arg) == 0) {
-            dev->CR1 &= ~(USART_CR1_TXEIE);
-        }
+    	if (config[uartnum].tx_cb != NULL) {
+    		if (config[uartnum].tx_cb(config[uartnum].arg) == 0) {
+    			dev->CR1 &= ~(USART_CR1_TXEIE);
+    		}
+    	}
     }
     if (sched_context_switch_request) {
         thread_yield();
