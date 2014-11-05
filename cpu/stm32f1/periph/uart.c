@@ -90,6 +90,7 @@ int uart_init(uart_t uart, uint32_t baudrate, uart_rx_cb_t rx_cb, uart_tx_cb_t t
     /* register callbacks */
     config[uart].rx_cb = rx_cb;
     config[uart].tx_cb = tx_cb;
+    config[uart].arg = arg;
 
     return 0;
 }
