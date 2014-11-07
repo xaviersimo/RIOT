@@ -2,7 +2,7 @@
 APPLICATION = hello-world
 
 # If no BOARD is found in the environment, use this default:
-BOARD ?= native
+BOARD ?= vesna
 
 # This has to be the absolute path to the RIOT base directory:
 RIOTBASE ?= $(CURDIR)/../..
@@ -14,5 +14,7 @@ CFLAGS += -DDEVELHELP
 
 # Change this to 0 show compiler invocation lines by default:
 QUIET ?= 1
+
+USEMODULE += vtimer
 
 include $(RIOTBASE)/Makefile.include

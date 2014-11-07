@@ -19,14 +19,36 @@
  * @}
  */
 
-#include <stdio.h>
+//#include <stdio.h>
+#include "board.h"
+#include "vtimer.h"
+#include "uart.h"
+
+#define MSEC (1000)
+#define SEC (1000 * MSEC)
 
 int main(void)
 {
-    puts("Hello World!");
+	while(1)
+	{
 
-    printf("You are running RIOT on a(n) %s board.\n", RIOT_BOARD);
-    printf("This board features a(n) %s MCU.\n", RIOT_MCU);
+    LED_GREEN_ON;
+    vtimer_usleep(SEC);
+    LED_GREEN_OFF;
+    vtimer_usleep(SEC);
 
+
+    //printf("You are running RIOT on a(n) %s board.\n", RIOT_BOARD);
+    //printf("This board features a(n) %s MCU.\n", RIOT_MCU);
+    //puts("hello worl!\n");
+    //printf("Hello World!");
+
+	uart_write(STDIO, 'h');
+	uart_write(STDIO, 'h');
+	uart_write(STDIO, 'h');
+	uart_write(STDIO, 'h');
+	uart_write(STDIO, 'h');
+	uart_write(STDIO, '\n');
+	}
     return 0;
 }
