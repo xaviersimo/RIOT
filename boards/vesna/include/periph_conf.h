@@ -27,24 +27,23 @@ extern "C" {
  * @name Clock system configuration
  * @{
  **/
-#define CLOCK_HSE           (16000000U)             /* frequency of external oscillator */
-#define CLOCK_CORECLOCK     (8000000U)             /* targeted core clock frequency */
-/* configuration of PLL prescaler and multiply values */
-/* CORECLOCK := HSE / PLL_HSE_DIV * PLL_HSE_MUL */
-//#define CLOCK_PLL_HSE_DIV   RCC_CFGR_PLLXTPRE_HSE_Div2
-//#define CLOCK_PLL_HSE_MUL   RCC_CFGR_PLLMULL9
-
-/* CORECLOCK := HSE / PLL_HSE_DIV * PLL_HSE_MUL */
-//#define CLOCK_PLL_HSI_DIV   RCC_CFGR_PLLXTPRE_PREDIV1_Div2
-//#define CLOCK_PLL_HSI_MUL   RCC_CFGR_PLLMULL9
-
+// #define CLOCK_HSE         0             /* no external clock */
+#define CLOCK_CORECLOCK     (8000000U)     /* targeted core clock frequency */
 
 /* configuration of peripheral bus clock prescalers */
 #define CLOCK_AHB_DIV       RCC_CFGR_HPRE_DIV1      /* AHB clock -> 8MHz */
 #define CLOCK_APB2_DIV      RCC_CFGR_PPRE2_DIV1     /* APB2 clock -> 8MHz */
 #define CLOCK_APB1_DIV      RCC_CFGR_PPRE1_DIV1     /* APB1 clock -> 8MHz */
+
 /* configuration of flash access cycles */
-#define CLOCK_FLASH_LATENCY FLASH_ACR_LATENCY_0
+#define CLOCK_FLASH_LATENCY 0
+/** @} */
+
+/**
+ * @name Flash Configurations
+ * @{
+ **/
+#define FLASH_PREFETCH_BUFFER 0 /* disabled */
 /** @} */
 
 /**
@@ -151,8 +150,8 @@ extern "C" {
  */
 #define GPIO_NUMOF          0
 #define GPIO_0_EN           0
-#define GPIO_1_EN           0
-#define GPIO_2_EN           0
+#define GPIO_1_EN           1 // PC13
+#define GPIO_2_EN           1 // PB1
 #define GPIO_3_EN           0
 #define GPIO_4_EN           0
 #define GPIO_5_EN           0
@@ -195,17 +194,17 @@ extern "C" {
 #define GPIO_0_EXTI_CFG()   (AFIO->EXTICR[0] |= AFIO_EXTICR1_EXTI3_PA)
 #define GPIO_0_IRQ          EXTI3_IRQn
 /* GPIO channel 1 config */
-#define GPIO_1_PORT         GPIOA
-#define GPIO_1_PIN          8
-#define GPIO_1_CLKEN()      (RCC->APB2ENR |= RCC_APB2ENR_IOPAEN)
-#define GPIO_1_EXTI_CFG()   (AFIO->EXTICR[2] |= AFIO_EXTICR3_EXTI8_PA)
-#define GPIO_1_IRQ          EXTI9_5_IRQn
+#define GPIO_1_PORT         GPIOC
+#define GPIO_1_PIN          13
+#define GPIO_1_CLKEN()
+#define GPIO_1_EXTI_CFG()   (AFIO->EXTICR[3] |= AFIO_EXTICR4_EXTI13_PC)
+#define GPIO_1_IRQ          EXTI15_10_IRQn
 /* GPIO channel 2 config */
-#define GPIO_2_PORT         GPIOA
-#define GPIO_2_PIN          12
-#define GPIO_2_CLKEN()      (RCC->APB2ENR |= RCC_APB2ENR_IOPAEN)
-#define GPIO_2_EXTI_CFG()   (AFIO->EXTICR[3] |= AFIO_EXTICR4_EXTI12_PA)
-#define GPIO_2_IRQ          EXTI15_10_IRQn
+#define GPIO_2_PORT         GPIOB
+#define GPIO_2_PIN          1
+#define GPIO_2_CLKEN()
+#define GPIO_2_EXTI_CFG()   (AFIO->EXTICR[1] |= AFIO_EXTICR1_EXTI1_PB)
+#define GPIO_2_IRQ          EXTI0_IRQn
 /* GPIO channel 3 config */
 #define GPIO_3_PORT         GPIOB
 #define GPIO_3_PIN          8

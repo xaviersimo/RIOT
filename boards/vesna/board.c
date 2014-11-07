@@ -26,18 +26,28 @@ static void leds_init(void);
 
 void board_init(void)
 {
+    volatile i;
+
     /* initialize the CPU */
     cpu_init();
 
     /* initialize the boards LEDs */
     leds_init();
 
+    /* Comments by JSI */
+
+    /* PC13 must be pulled for 100ms. PB1 in floating */
+    gpio_init_out(GPIO_1, GPIO_PULLUP);
+    gpio_init_in(GPIO_2, GPIO_NOPULL);
+
+    /* forced delay 100ms */
+    for(i=0; i < (100 * CLOCK_CORECLOCK) / 1000; i++);
+
     /* initialize the UART */
     uart_init(STDIO, STDIO_BAUDRATE, NULL, NULL, NULL);
 
-    /* forced delay */
-    volatile int i;
-    for(i=0; i< 10000; i++);
+    /* forced delay 100ms, waiting for UART */
+    for(i=0; i < (100 * CLOCK_CORECLOCK) / 1000; i++);
 }
 
 /**
