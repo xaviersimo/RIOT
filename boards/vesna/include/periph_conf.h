@@ -28,17 +28,23 @@ extern "C" {
  * @{
  **/
 #define CLOCK_HSE           (16000000U)             /* frequency of external oscillator */
-#define CLOCK_CORECLOCK     (72000000U)             /* targeted core clock frequency */
+#define CLOCK_CORECLOCK     (8000000U)             /* targeted core clock frequency */
 /* configuration of PLL prescaler and multiply values */
 /* CORECLOCK := HSE / PLL_HSE_DIV * PLL_HSE_MUL */
-#define CLOCK_PLL_HSE_DIV   RCC_CFGR_PLLXTPRE_HSE_Div2
-#define CLOCK_PLL_HSE_MUL   RCC_CFGR_PLLMULL9
+//#define CLOCK_PLL_HSE_DIV   RCC_CFGR_PLLXTPRE_HSE_Div2
+//#define CLOCK_PLL_HSE_MUL   RCC_CFGR_PLLMULL9
+
+/* CORECLOCK := HSE / PLL_HSE_DIV * PLL_HSE_MUL */
+//#define CLOCK_PLL_HSI_DIV   RCC_CFGR_PLLXTPRE_PREDIV1_Div2
+//#define CLOCK_PLL_HSI_MUL   RCC_CFGR_PLLMULL9
+
+
 /* configuration of peripheral bus clock prescalers */
-#define CLOCK_AHB_DIV       RCC_CFGR_HPRE_DIV1      /* AHB clock -> 72MHz */
-#define CLOCK_APB2_DIV      RCC_CFGR_PPRE2_DIV1     /* APB2 clock -> 72MHz */
-#define CLOCK_APB1_DIV      RCC_CFGR_PPRE1_DIV2     /* APB1 clock -> 36MHz */
+#define CLOCK_AHB_DIV       RCC_CFGR_HPRE_DIV1      /* AHB clock -> 8MHz */
+#define CLOCK_APB2_DIV      RCC_CFGR_PPRE2_DIV1     /* APB2 clock -> 8MHz */
+#define CLOCK_APB1_DIV      RCC_CFGR_PPRE1_DIV1     /* APB1 clock -> 8MHz */
 /* configuration of flash access cycles */
-#define CLOCK_FLASH_LATENCY FLASH_ACR_LATENCY_2
+#define CLOCK_FLASH_LATENCY FLASH_ACR_LATENCY_0
 /** @} */
 
 /**
@@ -53,7 +59,7 @@ extern "C" {
 #define TIMER_0_DEV_0       TIM2
 #define TIMER_0_DEV_1       TIM3
 #define TIMER_0_CHANNELS    4
-#define TIMER_0_PRESCALER   (72U)
+#define TIMER_0_PRESCALER   (8U)
 #define TIMER_0_MAX_VALUE   (0xffff)
 #define TIMER_0_CLKEN()     (RCC->APB1ENR |= (RCC_APB1ENR_TIM2EN | RCC_APB1ENR_TIM3EN))
 #define TIMER_0_ISR_0       isr_tim2
@@ -93,7 +99,7 @@ extern "C" {
 #define UART_0_CLKEN()      (RCC->APB2ENR |= RCC_APB2ENR_USART1EN)
 #define UART_0_IRQ          USART1_IRQn
 #define UART_0_ISR          isr_usart1
-#define UART_0_BUS_FREQ     72000000
+#define UART_0_BUS_FREQ     50000000
 /* UART 0 pin configuration */
 #define UART_0_PORT         GPIOA
 #define UART_0_PORT_CLKEN() (RCC->APB2ENR |= RCC_APB2ENR_IOPAEN)

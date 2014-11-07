@@ -9,7 +9,7 @@ fi
 BIN_FOLDER=$(dirname "${FILE}")
 
 openocd -f "${BIN_FOLDER}/${BOARD}_jtag.cfg" \
-	-f "target/stm32f1x.cfg" \
+	-f "target/stm32f1x_stlink.cfg" \
 	-c "init" \
 	-c "targets" \
 	-c "reset halt" \

@@ -17,9 +17,10 @@
  *
  * @}
  */
-
+#include <stdio.h>
 #include "board.h"
 #include "cpu.h"
+#include "uart.h"
 
 static void leds_init(void);
 
@@ -35,7 +36,7 @@ void board_init(void)
     uart_init(STDIO, STDIO_BAUDRATE, NULL, NULL, NULL);
 
     /* forced delay */
-    volatile i;
+    volatile int i;
     for(i=0; i< 10000; i++);
 }
 
