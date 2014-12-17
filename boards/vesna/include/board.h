@@ -44,6 +44,7 @@ extern "C" {
 #define STDIO_RX_BUFSIZE    (64U)
 /** @} */
 
+
 /**
  * @name Assign the hardware timer
  * @{
@@ -57,10 +58,29 @@ extern "C" {
  */
 #define AT86RF231_SPI       SPI_0
 #define AT86RF231_CS        GPIO_11 // xxx
-#define AT86RF231_INT       GPIO_12 // xxx probably PC9
+#define AT86RF231_INT       GPIO_IRQ_12 // xxx probably PC9
 #define AT86RF231_RESET     GPIO_13 // xxx
 #define AT86RF231_SLEEP     GPIO_14 // xxx
+#define AT86RF231_mosi       GPIO_8
+#define AT86RF231_miso        GPIO_9
+#define AT86RF231_clk        GPIO_10
+
+
+//#define AT86RF231_CHANNEL   15
 /** @} */
+
+/**
+ * @name Define the interface to the CC1101 radio
+ * @{
+ */
+#define CC1100_SPI       SPI_0
+#define RX_BUF_SIZE      300
+#define CC1100_CS        GPIO_11 // xxx
+#define CC1100_INT       GPIO_12 // xxx probably PC9
+#define CC1100_RESET
+#define CC1100_SLEEP
+/** @} */
+
 
 /**
  * @name LED pin definitions
@@ -80,7 +100,10 @@ extern "C" {
 
 #define LED_GREEN_ON        (LED_GREEN_PORT->BSRR = (1<<LED_GREEN_PIN))
 #define LED_GREEN_OFF       (LED_GREEN_PORT->BRR = (1<<LED_GREEN_PIN))
-#define LED_GREEN_TOGGLE    (LED_GREEN_PORT->ODR ^= (1<<LED_GREEN_PIN))
+
+
+
+
 
 #define LED_ORANGE_ON
 #define LED_ORANGE_OFF
