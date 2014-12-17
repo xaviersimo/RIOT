@@ -1,15 +1,12 @@
-Hello World!
+Latency!
 ============
 
-This is a basic example how to use RIOT in your embedded application.
-It prints out the famous text `Hello World!`.
+This is a basic test for RIOT. It test how the real time is RIOT.
 
-This example should foremost give you an overview how to use the Makefile system:
+Compare the latency between actual time and  when the thread wake up in especific time.
+It prints out histogram from latency values. 
 
-* First you must give your application a name, which is commonly the same as the name of the directory it resides in.
-  Then you can define a default BOARD for which the application was written.
-  By using e.g. `make BOARD=msba2` you can override the default board.
-  With `make buildtest` the application gets compiled for all supported boards.
+* First you can define Latency resolution and limit test values. 
 
 * The variable `RIOTBASE` contains an absolute or relative path to the directory where you have checked out RIOT.
   If your code resides in a subdirectory of RIOT, then you can use `$(CURDIR)` as it's done in here.
