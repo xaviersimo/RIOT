@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Freie Universität Berlin
+ * Copyright (C) 2014 Triagnosys
  *
  * This file is subject to the terms and conditions of the GNU Lesser
  * General Public License v2.1. See the file LICENSE in the top level
@@ -11,10 +11,9 @@
  * @{
  *
  * @file
- * @brief       Hello World application
+ * @brief       Latency Riot application
  *
- * @author      Kaspar Schleiser <kaspar@schleiser.de>
- * @author      Ludwig Ortmann <ludwig.ortmann@fu-berlin.de>
+ * @author      Xavier Perez <xaviersimo@triagnosys.com>
  *
  * @}
  */
