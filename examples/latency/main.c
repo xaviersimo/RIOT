@@ -40,6 +40,8 @@ int index=1000;
 int latency[1000]={0}; /*define vector for latency*/
 int count[1000]={0};
 
+
+
 void *second_thread(void *arg)
 {
     (void) arg;
@@ -85,14 +87,21 @@ int main(void)
 
 	/*define sleep variables*/
 	vtimer_t vtimer;
-	timex_t interval=timex_set(2, 0);
+	timex_t interval=timex_set(1, 0);
 
 	/*inizialize parameters*/
 	int i=0;
-	int time=100;
+	int time=10;
 
 	/*print values*/
 	int n=0;
+	int x=0;
+
+	/*Maximum and minimum values*/
+	int max_c=count[0];
+	int max_l=latency[0];
+	int min_c=1;
+	int min_l=latency[0];
 
 
 	/*define sleeping thread*/
@@ -121,7 +130,7 @@ int main(void)
     printf("********************************************* \n");
     printf("config parameters:\n\n");
     printf("Interval sleep: sec:%i\n", interval.seconds);
-    printf("Latency resolution (in microsenconds): 1000\n");
+    printf("Samples: 1000\n");
     printf("time process: %i\n", time);
     printf("********************************************** \n");
     printf("\n \n");
@@ -156,10 +165,16 @@ while(1){
 			{
 			//diff.seconds = now_thread.seconds - next.seconds; //always is 0
 			diff.microseconds = now_thread.microseconds - next.microseconds;
+			if (diff.microseconds > 99999)
+			diff.microseconds =  0x100000000 - diff.microseconds;
 
-			count[diff.microseconds/10] += 1 ;
+			count[diff.microseconds] += 1 ;
+			//x+=1;
+			//printf("%i\n", x);
+	//		printf("next is microsec: %"PRIu32"\n", next.microseconds);
+		//	printf("now_thread is microsec: %"PRIu32"\n", now_thread.microseconds);
+			//printf("diff is microsec: %"PRIu32"\n", diff.microseconds);
 
-			//printf("diff is microsec: %i\n", diff.microseconds);
 			}
 		}
 
@@ -173,13 +188,30 @@ while(1){
 		for(n=0; n < index ; n++)
 			{
 			if(n<10)
-			printf("%i000 %i\n",latency[n], count[n]);
+			printf("00%i %"PRIu32"\n",latency[n], count[n]);
 			else if(n<100 && n>=10)
-			printf("%i00 %i\n",latency[n], count[n]);
+			printf("0%i %"PRIu32"\n",latency[n], count[n]);
 			else
-			printf("%i0 %i\n",latency[n], count[n]);
+			printf("%i %"PRIu32"\n",latency[n], count[n]);
+
+			/*Get the maximum values*/
+			if (max_c < count[n])
+				{
+				max_c = count[n];
+				max_l = latency[n];
+
+				}
+
+			/*Get the minimum values*/
+			if (min_c > count[n])
+				{
+				min_c = count[n];
+				min_l = latency[n];
+
+				}
 			}
 
+		printf("MIN: %i microsec in %i times  ;  MAX: %i microsec in %i times \n", min_l, min_c, max_l, max_c);
 		}
 
 	}
