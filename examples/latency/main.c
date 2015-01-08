@@ -34,9 +34,9 @@ char latency_vector_stack[KERNEL_CONF_STACKSIZE_MAIN];
 
 /*Global variables*/
 timex_t now_thread;
-int flag;
+int flag=1;
 
-int index=1000;
+int index=100;
 int latency[1000]={0}; /*define vector for latency*/
 int count[1000]={0};
 
@@ -80,11 +80,15 @@ int main(void)
     /*define time variables*/
 	timex_t now;
 	timex_t next;
+	timex_t next_old;
 	timex_t diff;
 	now_thread.seconds=0;
 	now_thread.microseconds=0;
 	next.seconds=0;
 	next.microseconds=0;
+	next_old.seconds=0;
+	next_old.microseconds=0;
+
 
 	/*define sleep variables*/
 	vtimer_t vtimer;
@@ -108,7 +112,7 @@ int main(void)
     kernel_pid_t pid = thread_create(second_thread_stack,
     		                          KERNEL_CONF_STACKSIZE_MAIN,
                                       PRIORITY_MAIN - 1,
-                                      CREATE_WOUT_YIELD | CREATE_STACKTEST,
+                                      CREATE_WOUT_YIELD | CREATE_STACKTEST | CREATE_SLEEPING,
                                       second_thread,
                                       NULL,
                                       "sleep_thread");
@@ -129,8 +133,8 @@ int main(void)
     printf("************* Latency RIOT test ************* \n");
     printf("********************************************* \n");
     printf("config parameters:\n\n");
-    printf("Interval sleep: sec:%i\n", interval.seconds);
-    printf("Samples: 1000\n");
+    printf("Interval sleep: %i sec\n", interval.seconds);
+    printf("Samples:%i\n", index);
     printf("time process: %i\n", time);
     printf("********************************************** \n");
     printf("\n \n");
@@ -145,18 +149,21 @@ while(1){
 		/*get time now and program next thread wake up*/
 		vtimer_now(&now);
 		vtimer_set_wakeup(&vtimer, interval, pid);
+		next_old.microseconds = next.microseconds;
 		next.microseconds = now.microseconds + interval.microseconds;
 		flag=0;
 		i = i +1;
 
-
 		/*Capture and print out  latency values*/
 			//diff.seconds = now_thread.seconds - next.seconds; //always is 0
-			diff.microseconds = now_thread.microseconds - next.microseconds;
+			diff.microseconds = now_thread.microseconds - next_old.microseconds;
 			if (diff.microseconds > 99999)
 			diff.microseconds =  0x100000000 - diff.microseconds;
 
 			count[diff.microseconds] += 1 ;
+
+
+
 			//x+=1;
 			//printf("%i\n", x);
 	//		printf("next is microsec: %"PRIu32"\n", next.microseconds);
@@ -168,6 +175,7 @@ while(1){
 
 	if(time == i)
 		{
+		thread_print_all();
 		time=0;
 		printf("Test finish\n");
 		printf("print histogram\n");
