@@ -34,7 +34,7 @@ char latency_vector_stack[KERNEL_CONF_STACKSIZE_MAIN];
 
 /*Global variables*/
 timex_t now_thread;
-int flag_th;
+int flag;
 
 int index=1000;
 int latency[1000]={0}; /*define vector for latency*/
@@ -48,7 +48,7 @@ void *second_thread(void *arg)
 
     while (1) {
     	vtimer_now(&now_thread);
-    	flag_th = 1;
+    	flag = 1;
 		thread_sleep();
     }
 
@@ -83,7 +83,8 @@ int main(void)
 	timex_t diff;
 	now_thread.seconds=0;
 	now_thread.microseconds=0;
-	int flag_time;
+	next.seconds=0;
+	next.microseconds=0;
 
 	/*define sleep variables*/
 	vtimer_t vtimer;
@@ -95,7 +96,6 @@ int main(void)
 
 	/*print values*/
 	int n=0;
-	int x=0;
 
 	/*Maximum and minimum values*/
 	int max_c=count[0];
@@ -139,30 +139,18 @@ int main(void)
 
 while(1){
 
-	if(flag_time && (i<time))
+	if(flag && (i<time))
 		{
 
-		flag_time = 0;
-
-		/*Capture the time values*/
+		/*get time now and program next thread wake up*/
 		vtimer_now(&now);
-		next.seconds = now.seconds + interval.seconds;
+		vtimer_set_wakeup(&vtimer, interval, pid);
 		next.microseconds = now.microseconds + interval.microseconds;
-		}
-
-
-	if(flag_th && (i<time))
-		{
-
-		/*Program next thread wake up*/
-		flag_th=0;
-		flag_time=1;
+		flag=0;
 		i = i +1;
-	    vtimer_set_wakeup(&vtimer, interval, pid);
+
 
 		/*Capture and print out  latency values*/
-		if(i>1)
-			{
 			//diff.seconds = now_thread.seconds - next.seconds; //always is 0
 			diff.microseconds = now_thread.microseconds - next.microseconds;
 			if (diff.microseconds > 99999)
@@ -172,10 +160,10 @@ while(1){
 			//x+=1;
 			//printf("%i\n", x);
 	//		printf("next is microsec: %"PRIu32"\n", next.microseconds);
-		//	printf("now_thread is microsec: %"PRIu32"\n", now_thread.microseconds);
+		   // printf("now_thread is microsec: %"PRIu32"\n", now_thread.microseconds);
 			//printf("diff is microsec: %"PRIu32"\n", diff.microseconds);
 
-			}
+
 		}
 
 	if(time == i)
@@ -215,26 +203,6 @@ while(1){
 		}
 
 	}
-
-//	while(i<100)
-	//	{
-	//	i=i+1;
-	//	latency[i]=i;
-	//	printf("latency: %i  ", latency[i]);
-	//	printf("count is:%i\n", count[i]);
-		//vtimer_usleep(SEC);
-	//	}
-
-	//	printf("finish\n");
-	//	vtimer_usleep(SEC);
-
-
-
-
-    //vtimer_now(&now);
-
- // printf("now is second: %i\n", now.seconds);
-  //printf("now is second: %i\n", now.microseconds);
 
     return 0;
 }
