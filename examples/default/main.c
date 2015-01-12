@@ -31,6 +31,10 @@
 #include "shell_commands.h"
 #include "board_uart0.h"
 
+#if FEATURE_PERIPH_RTC
+#include "periph/rtc.h"
+#endif
+
 #ifdef MODULE_LTC4150
 #include "ltc4150.h"
 #endif
@@ -75,8 +79,8 @@ void *radio(void *arg)
             p = (ieee802154_packet_t*) m.content.ptr;
             printf("Got radio packet:\n");
             printf("\tLength:\t%u\n", p->length);
-            printf("\tSrc:\t%u\n", p->frame.src_addr[0]);
-            printf("\tDst:\t%u\n", p->frame.dest_addr[0]);
+            printf("\tSrc:\t%u\n", (p->frame.src_addr[0])|(p->frame.src_addr[1]<<8));
+            printf("\tDst:\t%u\n", (p->frame.dest_addr[0])|(p->frame.dest_addr[1]<<8));
             printf("\tLQI:\t%u\n", p->lqi);
             printf("\tRSSI:\t%u\n", p->rssi);
 
@@ -154,6 +158,10 @@ int main(void)
 
 #ifdef MODULE_TRANSCEIVER
     init_transceiver();
+#endif
+
+#ifdef FEATURE_PERIPH_RTC
+    rtc_init();
 #endif
 
     (void) puts("Welcome to RIOT!");
