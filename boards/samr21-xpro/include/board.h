@@ -12,7 +12,7 @@
  * @brief       Support for the Atmel SAM R21 Xplained Pro board.
  * @{
  *
- * @file        board.h
+ * @file
  * @brief       Board specific definitions for the Atmel SAM R21 Xplained Pro board.
  *
  * @author      Thomas Eichinger <thomas.eichinger@fu-berlin.de>
@@ -23,16 +23,32 @@
 
 #include "cpu.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * Define the nominal CPU core clock in this board
  */
-#define F_CPU               (48000000UL)
+#define F_CPU               (8000000UL)
 
 /**
  * Assign the hardware timer
  */
-#define HW_TIMER            TIMER_0
+#define HW_TIMER            TIMER_1
 
+/**
+* @name AT86RF231 config
+* @{ 
+*/
+#define AT86RF231_SPI      SPI_0
+#define AT86RF231_CS       GPIO_4
+#define AT86RF231_INT      GPIO_5
+#define AT86RF231_RESET    GPIO_6
+#define AT86RF231_SLEEP    GPIO_7
+
+#define AT86RF231_SPI_SPEED SPI_SPEED_1MHZ
+/** @}*/
 /**
  * @name Define UART device and baudrate for stdio
  * @{
@@ -47,7 +63,7 @@
  * @{
  */
 #define LED_PORT            PORT->Group[0]
-#define LED_PIN             PORT_PA19
+#define LED_PIN             (19)
 /** @} */
 
 /**
@@ -71,9 +87,18 @@
 /** @} */
 
 /**
+ * @brief Define the type for the radio packet length for the transceiver
+ */
+typedef uint8_t radio_packet_length_t;
+
+/**
  * @brief Initialize board specific hardware, including clock, LEDs and std-IO
  */
 void board_init(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /** __BOARD_H */
 /** @} */

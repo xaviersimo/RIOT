@@ -10,7 +10,7 @@
  * @ingroup         cpu_nrf51822
  * @{
  *
- * @file            cpu-conf.h
+ * @file
  * @brief           Implementation specific CPU configuration options
  *
  * @author          Hauke Petersen <hauke.peterse@fu-berlin.de>
@@ -21,6 +21,10 @@
 
 #include "nrf51.h"
 #include "nrf51_bitfields.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * @name Kernel configuration
@@ -50,6 +54,10 @@
  * @name Length in bytes for reading CPU_ID
  */
 #define CPUID_ID_LEN                    (8)
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __CPU_CONF_H */
 /** @} */

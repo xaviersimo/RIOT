@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2014 INRIA
  *
  * This file is subject to the terms and conditions of the GNU Lesser
@@ -7,10 +7,13 @@
  */
 
 /**
+ * @defgroup radio_driver IEEE 802.15.4 radio driver interface
  * @ingroup drivers
- * @{
- * @file  radio_driver.h
+ *
  * @brief API definitions for 802.15.4 radio transceivers' drivers
+ *
+ * @{
+ * @file
  * @author Kévin Roussel <Kevin.Roussel@inria.fr>
  *
  */
@@ -21,6 +24,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * @brief Callback function type for receiving incoming packets
@@ -345,6 +351,9 @@ typedef struct {
 
 } ieee802154_radio_driver_t;
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* IEEE802154_RADIO_DRIVER_API_ */
 

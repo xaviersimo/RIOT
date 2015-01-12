@@ -6,6 +6,18 @@
  * directory for more details.
  */
 
+/**
+ * @addtogroup  core_util
+ * @{
+ *
+ * @file        kernel_types.h
+ * @brief       Types used by the kernel
+ *
+ * @author      Oliver Hahm <oliver.hahm@inria.fr>
+ * @author      René Kijewski <rene.kijewski@fu-berlin.de>
+ * @author      Ludwig Ortmann <ludwig.ortmann@fu-berlin.de>
+ */
+
 #ifndef KERNEL_TYPES_H
 #define KERNEL_TYPES_H
 
@@ -17,6 +29,9 @@
 #   include <stddef.h>
 #   include <sys/types.h>
 
+/**
+ * @brief Maximum value for ssize_t
+ */
 #   ifndef SSIZE_MAX
 #       ifdef _POSIX_SSIZE_MAX
 #           define SSIZE_MAX _POSIX_SSIZE_MAX
@@ -25,9 +40,13 @@
 #       endif
 #   endif
 
-#   if defined (MODULE_MSP430_COMMON) || defined (MODULE_ATMEGA_COMMON)
+#   ifdef MODULE_MSP430_COMMON
         typedef signed ssize_t;
 #   endif
+#endif
+
+#ifdef __cplusplus
+ extern "C" {
 #endif
 
 /**
@@ -63,4 +82,21 @@
  */
 typedef int16_t kernel_pid_t;
 
+/**
+ * @brief   Determine if the given pid is valid
+ *
+ * @param[in]   pid     The pid to check
+ *
+ * @return      true if the pid is valid, false otherwise
+ */
+static inline int pid_is_valid(kernel_pid_t pid)
+{
+    return ((KERNEL_PID_FIRST <= pid) && (pid <= KERNEL_PID_LAST));
+}
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif /* KERNEL_TYPES_H */
+/** @} */

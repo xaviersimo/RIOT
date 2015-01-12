@@ -26,7 +26,7 @@
 
 // riot
 #include "thread.h"
-#include "rtc.h"
+#include "periph/rtc.h"
 
 // ccn
 #include "ccn_lite/ccnl-riot.h"
@@ -58,7 +58,7 @@ void populate_cache(void)
     msg_t m;
     m.content.value = 0;
     m.type = CCNL_RIOT_POPULATE;
-    msg_send(&m, _relay_pid, 1);
+    msg_send(&m, _relay_pid);
 }
 
 void *second_thread(void *arg)

@@ -143,22 +143,12 @@ int gpio_init_out(gpio_t dev, gpio_pp_t pullup)
         return pin;
     }
 
-    /* set pin to output mode */
-    NRF_GPIO->DIRSET = (1 << pin);
-
-    /* set pin to standard configuration */
-    NRF_GPIO->PIN_CNF[pin] = 0;
-
-    /* set pull register configuration */
-    switch (pullup) {
-        case GPIO_NOPULL:
-            return -1;
-        case GPIO_PULLUP:
-            NRF_GPIO->PIN_CNF[dev] |= (GPIO_PIN_CNF_PULL_Pullup << GPIO_PIN_CNF_PULL_Pos);
-            break;
-        case GPIO_PULLDOWN:
-            NRF_GPIO->PIN_CNF[dev] |= (GPIO_PIN_CNF_PULL_Pulldown << GPIO_PIN_CNF_PULL_Pos);
-            break;
+    /* configure pin: output, input buffer disabled */
+    NRF_GPIO->PIN_CNF[pin] = (GPIO_PIN_CNF_DIR_Output << GPIO_PIN_CNF_DIR_Pos) |
+                             (GPIO_PIN_CNF_INPUT_Disconnect << GPIO_PIN_CNF_INPUT_Pos);
+    /* configure pull up value, map 0x1 -> 0x2; 0x2 -> 0x1 */
+    if (pullup > 0) {
+        NRF_GPIO->PIN_CNF[pin] |= ((pullup ^ 0x3) << GPIO_PIN_CNF_PULL_Pos);
     }
 
     return 0;
@@ -171,22 +161,12 @@ int gpio_init_in(gpio_t dev, gpio_pp_t pullup)
         return pin;
     }
 
-    /* set pin to output mode */
-    NRF_GPIO->DIRCLR = (1 << pin);
-
-    /* set pin to standard configuration */
-    NRF_GPIO->PIN_CNF[pin] = 0;
-
-    /* set pull register configuration */
-    switch (pullup) {
-        case GPIO_NOPULL:
-            return -1;
-        case GPIO_PULLUP:
-            NRF_GPIO->PIN_CNF[dev] |= (GPIO_PIN_CNF_PULL_Pullup << GPIO_PIN_CNF_PULL_Pos);
-            break;
-        case GPIO_PULLDOWN:
-            NRF_GPIO->PIN_CNF[dev] |= (GPIO_PIN_CNF_PULL_Pulldown << GPIO_PIN_CNF_PULL_Pos);
-            break;
+    /* configure pin: output, input buffer disabled */
+    NRF_GPIO->PIN_CNF[pin] = (GPIO_PIN_CNF_DIR_Input << GPIO_PIN_CNF_DIR_Pos) |
+                             (GPIO_PIN_CNF_INPUT_Connect << GPIO_PIN_CNF_INPUT_Pos);
+    /* configure pull up value, map 0x1 -> 0x2; 0x2 -> 0x1 */
+    if (pullup > 0) {
+        NRF_GPIO->PIN_CNF[pin] |= ((pullup ^ 0x3) << GPIO_PIN_CNF_PULL_Pos);
     }
 
     return 0;
@@ -256,16 +236,14 @@ void gpio_irq_disable(gpio_t dev)
 
 int gpio_read(gpio_t dev)
 {
-    uint32_t pin;
-    int res = -1;
-
     /* get pin */
-    pin = get_pin(dev);
+    int pin = get_pin(dev);
     if (pin < 0) {
         return pin;
     }
 
     /* read pin value depending if pin is input or output */
+    int res;
     if (NRF_GPIO->DIR & (1 << pin)) {
         res = (NRF_GPIO->OUT & (1 << pin));
     }
@@ -317,9 +295,8 @@ void gpio_write(gpio_t dev, int value)
     }
 }
 
-__attribute__((naked)) void isr_gpiote(void)
+void isr_gpiote(void)
 {
-    ISR_ENTER();
     if (NRF_GPIOTE->EVENTS_IN[0] == 1)
     {
         NRF_GPIOTE->EVENTS_IN[0] = 0;
@@ -328,7 +305,6 @@ __attribute__((naked)) void isr_gpiote(void)
     if (sched_context_switch_request) {
         thread_yield();
     }
-    ISR_EXIT();
 }
 
 #endif /* GPIO_NUMOF */

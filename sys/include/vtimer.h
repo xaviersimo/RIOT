@@ -1,18 +1,21 @@
-/**
- * virtual timer header
- *
+/*
  * Copyright (C) 2009, 2014 Kaspar Schleiser
  * Copyright (C) 2013, 2014 Freie Universität Berlin
  *
  * This file is subject to the terms and conditions of the GNU Lesser
  * General Public License v2.1. See the file LICENSE in the top level
  * directory for more details.
- *
- * @ingroup  sys_vtimer
+ */
+
+/**
+ * @defgroup  sys_vtimer Virtual Timer
+ * @ingroup   sys
+ * @brief     Provides a high level abstraction timer module to register
+ *            timers, get current system time, and let a thread sleep for a certain amount
+ *            of time. It does not give any timing guarantees.
  * @{
- * @file        vtimer.h
+ * @file
  * @author Kaspar Schleiser <kaspar@schleiser.de>
- * @}
  */
 
 #ifndef __VTIMER_H
@@ -25,20 +28,35 @@
 #include "timex.h"
 #include "msg.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/**
+ * @brief IPC message type for vtimer msg callback
+ */
 #define MSG_TIMER 12345
 
 /**
- * A vtimer object.
+ * @brief A vtimer object.
  *
- * This structure is used for declaring a vtimer. This should not be used by programmers, use the vtimer_set_*-functions instead.
+ * This structure is used for declaring a vtimer. This should not be used by
+ * programmers, use the vtimer_set_*-functions instead.
  *
  * \hideinitializer
  */
 typedef struct vtimer_t {
+    /** entry in vtimer's internal priority queue */
     priority_queue_node_t priority_queue_entry;
+    /** the absoule point in time when the timer expires */
     timex_t absolute;
+    /** the action to perform when timer fires */
     void (*action)(struct vtimer_t *timer);
+    /** value for msg_t.type */
+    uint16_t type;
+    /** optional argument for vtimer_t::action */
     void *arg;
+    /** optional process id for vtimer_t::action to act on */
     kernel_pid_t pid;
 } vtimer_t;
 
@@ -82,18 +100,20 @@ int vtimer_usleep(uint32_t us);
 int vtimer_sleep(timex_t time);
 
 /**
- * @brief   set a vtimer with msg event handler
+ * @brief   set a vtimer with msg event handler of type @ref MSG_TIMER
  * @param[in]   t           pointer to preinitialised vtimer_t
  * @param[in]   interval    vtimer timex_t interval
  * @param[in]   pid         process id
+ * @param[in]   type        value for the msg_t type
  * @param[in]   ptr         message value
  * @return      0 on success, < 0 on error
  */
-int vtimer_set_msg(vtimer_t *t, timex_t interval, kernel_pid_t pid, void *ptr);
+int vtimer_set_msg(vtimer_t *t, timex_t interval, kernel_pid_t pid, uint16_t type, void *ptr);
 
 /**
  * @brief   set a vtimer with wakeup event
  * @param[in]   t           pointer to preinitialised vtimer_t
+ * @param[in]   interval    the interval after which the timer shall fire
  * @param[in]   pid         process id
  * @return      0 on success, < 0 on error
  */
@@ -132,6 +152,10 @@ void vtimer_print_short_queue(void);
  */
 void vtimer_print_long_queue(void);
 
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 /** @} */

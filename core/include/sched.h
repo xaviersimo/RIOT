@@ -86,6 +86,10 @@
 #include "attributes.h"
 #include "kernel_types.h"
 
+#ifdef __cplusplus
+ extern "C" {
+#endif
+
 /**
  * @def SCHED_PRIO_LEVELS
  * @brief The number of thread priority levels
@@ -96,8 +100,9 @@
 
 /**
  * @brief   Triggers the scheduler to schedule the next thread
+ * @returns 1 if sched_active_thread/sched_active_pid was changed, 0 otherwise.
  */
-void sched_run(void);
+int sched_run(void);
 
 /**
  * @brief   Set the status of the specified process
@@ -109,11 +114,16 @@ void sched_run(void);
 void sched_set_status(tcb_t *process, unsigned int status);
 
 /**
- * @brief   Compare thread priorities and yield() (or set
- *          sched_context_switch_request if inISR()) when other_prio is higher
- *          (has a lower value) than the current thread's priority
+ * @brief       Yield if approriate.
  *
- * @param[in]   other_prio      The priority of the target thread
+ * @details     Either yield if other_prio is higher than the current priority,
+ *              or if the current thread is not on the runqueue.
+ *
+ *              Depending on whether the current execution is in an ISR (inISR()),
+ *              thread_yield_higher() is called or @ref sched_context_switch_request is set,
+ *              respectively.
+ *
+ * @param[in]   other_prio      The priority of the target thread.
  */
 void sched_switch(uint16_t other_prio);
 
@@ -151,7 +161,7 @@ extern volatile kernel_pid_t sched_active_pid;
 /**
  * List of runqueues per priority level
  */
-extern clist_node_t *runqueues[SCHED_PRIO_LEVELS];
+extern clist_node_t *sched_runqueues[SCHED_PRIO_LEVELS];
 
 #if SCHEDSTATISTICS
 /**
@@ -176,6 +186,10 @@ extern schedstat sched_pidlist[KERNEL_PID_LAST + 1];
  */
 void sched_register_cb(void (*callback)(uint32_t, uint32_t));
 
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif // _SCHEDULER_H

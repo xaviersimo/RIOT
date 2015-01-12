@@ -38,10 +38,6 @@ extern void _heap_handler(int argc, char **argv);
 extern void _ps_handler(int argc, char **argv);
 #endif
 
-#ifdef MODULE_RTC
-extern void _date_handler(int argc, char **argv);
-#endif
-
 #ifdef MODULE_SHT11
 extern void _get_temperature_handler(int argc, char **argv);
 extern void _get_humidity_handler(int argc, char **argv);
@@ -49,9 +45,33 @@ extern void _get_weather_handler(int argc, char **argv);
 extern void _set_offset_handler(int argc, char **argv);
 #endif
 
+#ifdef MODULE_ISL29020
+extern void _get_isl29020_init_handler(int argc, char **argv);
+extern void _get_isl29020_read_handler(int argc, char **argv);
+#endif
+
+#ifdef MODULE_LPS331AP
+extern void _get_lps331ap_init_handler(int argc, char **argv);
+extern void _get_lps331ap_read_handler(int argc, char **argv);
+#endif
+
+#ifdef MODULE_L3G4200D
+extern void _get_l3g4200d_init_handler(int argc, char **argv);
+extern void _get_l3g4200d_read_handler(int argc, char **argv);
+#endif
+
+#ifdef MODULE_LSM303DLHC
+extern void _get_lsm303dlhc_init_handler(int argc, char **argv);
+extern void _get_lsm303dlhc_read_handler(int argc, char **argv);
+#endif
+
 #ifdef MODULE_LTC4150
 extern void _get_current_handler(int argc, char **argv);
 extern void _reset_current_handler(int argc, char **argv);
+#endif
+
+#if FEATURE_PERIPH_RTC
+extern void _rtc_handler(int argc, char **argv);
 #endif
 
 #ifdef CPU_X86
@@ -63,7 +83,7 @@ extern void _x86_lspci(int argc, char **argv);
 #ifdef DBG_IGNORE
 #define _TC_IGN
 #endif
-#if (defined(MODULE_CC110X_NG) || defined(MODULE_CC2420) || defined(MODULE_AT86RF231) || defined(MODULE_NATIVENET))
+#if (defined(MODULE_CC110X) || defined(MODULE_CC110X_LEGACY) || defined(MODULE_CC2420) || defined(MODULE_AT86RF231) || defined(MODULE_NATIVENET))
 #define _TC_ADDR
 #define _TC_CHAN
 #define _TC_MON
@@ -74,7 +94,7 @@ extern void _x86_lspci(int argc, char **argv);
 #define _TC_PAN
 #endif
 #else /* WITHOUT MODULE_TRANSCEIVER */
-#ifdef MODULE_CC110X
+#ifdef MODULE_CC110X_LEGACY_CSMA
 extern void _cc110x_get_set_address_handler(int argc, char **argv);
 extern void _cc110x_get_set_channel_handler(int argc, char **argv);
 #endif
@@ -102,6 +122,12 @@ extern void _transceiver_get_set_pan_handler(int argc, char **argv);
 #ifdef _TC_IGN
 extern void _transceiver_set_ignore_handler(int argc, char **argv);
 #endif
+#endif
+
+#ifdef MODULE_L2_PING
+extern void _l2_ping_req_handler(int argc, char **argv);
+extern void _l2_ping_probe_handler(int argc, char **argv);
+extern void _l2_ping_get_probe_handler(int argc, char **argv);
 #endif
 
 #ifdef MODULE_NET_IF
@@ -136,14 +162,27 @@ const shell_command_t _shell_command_list[] = {
 #ifdef MODULE_PS
     {"ps", "Prints information about running threads.", _ps_handler},
 #endif
-#ifdef MODULE_RTC
-    {"date", "Gets or sets current date and time.", _date_handler},
-#endif
 #ifdef MODULE_SHT11
     {"temp", "Prints measured temperature.", _get_temperature_handler},
     {"hum", "Prints measured humidity.", _get_humidity_handler},
     {"weather", "Prints measured humidity and temperature.", _get_weather_handler},
     {"offset", "Set temperature offset.", _set_offset_handler},
+#endif
+#ifdef MODULE_ISL29020
+    {"isl29020_init", "Initializes the isl29020 sensor driver.", _get_isl29020_init_handler},
+    {"isl29020_read", "Prints data from the isl29020 sensor.", _get_isl29020_read_handler},
+#endif
+#ifdef MODULE_LPS331AP
+    {"lps331ap_init", "Initializes the lps331ap sensor driver.", _get_lps331ap_init_handler},
+    {"lps331ap_read", "Prints data from the lps331ap sensor.", _get_lps331ap_read_handler},
+#endif
+#ifdef MODULE_L3G4200D
+    {"l3g4200d_init", "Initializes the l3g4200d sensor driver.", _get_l3g4200d_init_handler},
+    {"l3g4200d_read", "Prints data from the l3g4200d sensor.", _get_l3g4200d_read_handler},
+#endif
+#ifdef MODULE_LSM303DLHC
+    {"lsm303dlhc_init", "Initializes the lsm303dlhc sensor driver.", _get_lsm303dlhc_init_handler},
+    {"lsm303dlhc_read", "Prints data from the lsm303dlhc sensor.", _get_lsm303dlhc_read_handler},
 #endif
 #ifdef MODULE_LTC4150
     {"cur", "Prints current and average power consumption.", _get_current_handler},
@@ -172,10 +211,15 @@ const shell_command_t _shell_command_list[] = {
     {"ign", "Ignore the address at the transceiver", _transceiver_set_ignore_handler},
 #endif
 #else /* WITHOUT MODULE_TRANSCEIVER */
-#ifdef MODULE_CC110X
+#ifdef MODULE_CC110X_LEGACY_CSMA
     {"addr", "Gets or sets the address for the CC1100 transceiver", _cc110x_get_set_address_handler},
     {"chan", "Gets or sets the channel for the CC1100 transceiver", _cc110x_get_set_channel_handler},
 #endif
+#endif
+#ifdef MODULE_L2_PING
+    {"l2_ping", "Sends link layer ping requests", _l2_ping_req_handler},
+    {"l2_probe", "Sends link layer probes", _l2_ping_probe_handler},
+    {"l2_probe_stats", "Get statistics about received probes", _l2_ping_get_probe_handler},
 #endif
 #ifdef MODULE_NET_IF
     {"ifconfig", "Configures a network interface", _net_if_ifconfig},
@@ -193,6 +237,9 @@ const shell_command_t _shell_command_list[] = {
 #ifdef MODULE_RANDOM
     { "mersenne_init", "initializes the PRNG", _mersenne_init },
     { "mersenne_get", "returns 32 bit of pseudo randomness", _mersenne_get },
+#endif
+#if FEATURE_PERIPH_RTC
+    {"rtc", "control RTC peripheral interface",  _rtc_handler},
 #endif
 #ifdef CPU_X86
     {"lspci", "Lists PCI devices", _x86_lspci},

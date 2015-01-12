@@ -28,6 +28,10 @@
 #include "timex.h"
 #include "vtimer.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define STDIN_FILENO    0   ///< stdin file descriptor
 #define STDOUT_FILENO   1   ///< stdout file descriptor
 #define STDERR_FILENO   2   ///< stderr file descriptor
@@ -51,15 +55,22 @@
  */
 int close(int fildes);
 
+/**
+ * @name Microseconds data type
+ * @{
+ */
 #ifndef __USECONDS_T_TYPE
-#ifndef __MACH__
+#if !(defined(__MACH__) || defined(__FreeBSD__))
 typedef unsigned long __USECONDS_T_TYPE;
 typedef __USECONDS_T_TYPE __useconds_t;
 #else
+#ifdef __MACH__
 typedef __darwin_useconds_t __useconds_t;
 #endif
 #endif
+#endif
 typedef __useconds_t useconds_t;
+/** @} */
 
 /**
  * @brief the caller will sleep for given amount of micro seconds
@@ -97,6 +108,10 @@ int usleep(useconds_t useconds);
  * @return          0 on success
  */
 unsigned int sleep(unsigned int seconds);
+
+#ifdef __cplusplus
+}
+#endif
 
 /**
  * @}

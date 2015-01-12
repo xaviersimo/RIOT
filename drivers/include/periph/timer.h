@@ -7,11 +7,12 @@
  */
 
 /**
+ * @defgroup    driver_periph_timer Timer
  * @ingroup     driver_periph
  * @brief       Low-level timer peripheral driver
  * @{
  *
- * @file        periph/timer.h
+ * @file
  * @brief       Low-level timer peripheral driver interface definitions
  *
  * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
@@ -22,6 +23,9 @@
 
 #include "periph_conf.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * @brief Definition of available timers
@@ -55,13 +59,13 @@ typedef enum {
  * The timer will be started automatically after initialization with interrupts enabled.
  *
  * @param[in] dev           the timer to initialize
- * @param[in] ticks_per_us  the timers speed in ticks per us
+ * @param[in] us_per_tick   number of us passed for one timer tick
  * @param[in] callback      this callback is called in interrupt context, the emitting channel is
  *                          passed as argument
  *
  * @return                  returns 0 on success, -1 if speed not applicable of unknown device given
  */
-int timer_init(tim_t dev, unsigned int ticks_per_us, void (*callback)(int));
+int timer_init(tim_t dev, unsigned int us_per_tick, void (*callback)(int));
 
 /**
  * @brief Set a given timer channel for the given timer device. The callback given during
@@ -142,6 +146,10 @@ void timer_irq_disable(tim_t dev);
  * @param[in] dev           the timer to reset
  */
 void timer_reset(tim_t dev);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __TIMER_H */
 /** @} */

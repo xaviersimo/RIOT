@@ -58,22 +58,35 @@ static void clk_init(void)
     RCC->CIR = (uint32_t)0x009F0000;
 
     /* SYSCLK, HCLK, PCLK2 and PCLK1 configuration */
+
+#if CLOCK_HSE
     /* Enable HSE */
     RCC->CR |= ((uint32_t)RCC_CR_HSEON);
     /* Wait till HSE is ready,
      * NOTE: the MCU will stay here forever if no HSE clock is connected */
     while ((RCC->CR & RCC_CR_HSERDY) == 0);
+#else /* CLOCK_HSE */
+    RCC->CR |= ((uint32_t)RCC_CR_HSION);
+    while ((RCC->CR & RCC_CR_HSIRDY) == 0);
+#endif /* CLOCK_HSE */
+
+#if !defined(FLASH_PREFETCH_BUFFER) || FLASH_PREFETCH_BUFFER
     /* Enable Prefetch Buffer */
     FLASH->ACR |= FLASH_ACR_PRFTBE;
+#endif /* FLASH_PREFETCH_BUFFER */
+
     /* Flash 2 wait state */
     FLASH->ACR &= ~((uint32_t)FLASH_ACR_LATENCY);
     FLASH->ACR |= (uint32_t)CLOCK_FLASH_LATENCY;
+
     /* HCLK = SYSCLK */
     RCC->CFGR |= (uint32_t)CLOCK_AHB_DIV;
     /* PCLK2 = HCLK */
     RCC->CFGR |= (uint32_t)CLOCK_APB2_DIV;
     /* PCLK1 = HCLK */
     RCC->CFGR |= (uint32_t)CLOCK_APB1_DIV;
+
+#if CLOCK_HSE
     /*  PLL configuration: PLLCLK = HSE / HSE_DIV * HSE_MUL */
     RCC->CFGR &= ~((uint32_t)(RCC_CFGR_PLLSRC | RCC_CFGR_PLLXTPRE | RCC_CFGR_PLLMULL));
     RCC->CFGR |= (uint32_t)(RCC_CFGR_PLLSRC_HSE | CLOCK_PLL_HSE_DIV | CLOCK_PLL_HSE_MUL);
@@ -81,9 +94,11 @@ static void clk_init(void)
     RCC->CR |= RCC_CR_PLLON;
     /* Wait till PLL is ready */
     while ((RCC->CR & RCC_CR_PLLRDY) == 0);
+
     /* Select PLL as system clock source */
     RCC->CFGR &= ~((uint32_t)(RCC_CFGR_SW));
     RCC->CFGR |= (uint32_t)RCC_CFGR_SW_PLL;
     /* Wait till PLL is used as system clock source */
     while ((RCC->CFGR & (uint32_t)RCC_CFGR_SWS) != RCC_CFGR_SWS_PLL);
+#endif /* CLOCK_HSE */
 }

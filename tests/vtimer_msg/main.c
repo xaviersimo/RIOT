@@ -64,7 +64,7 @@ void *timer_thread(void *arg)
                tmsg->interval.microseconds,
                tmsg->msg);
 
-        if (vtimer_set_msg(&tmsg->timer, tmsg->interval, thread_getpid(), tmsg) != 0) {
+        if (vtimer_set_msg(&tmsg->timer, tmsg->interval, thread_getpid(), MSG_TIMER, tmsg) != 0) {
             puts("something went wrong");
         }
         else {
@@ -103,11 +103,11 @@ int main(void)
 
     puts("sending 1st msg");
     m.content.ptr = (char *) &msg_a;
-    msg_send(&m, pid, false);
+    msg_try_send(&m, pid);
 
     puts("sending 2nd msg");
     m.content.ptr = (char *) &msg_b;
-    msg_send(&m, pid, false);
+    msg_try_send(&m, pid);
 
     kernel_pid_t pid2 = thread_create(
                    timer_stack_local,
@@ -122,6 +122,6 @@ int main(void)
 
     while (1) {
         vtimer_sleep(sleep);
-        msg_send(&m, pid2, 0);
+        msg_try_send(&m, pid2);
     }
 }

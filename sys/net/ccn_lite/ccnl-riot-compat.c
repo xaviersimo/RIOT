@@ -53,11 +53,15 @@ int riot_send_transceiver(uint8_t *buf, uint16_t size, uint16_t to)
     }
 
 #if MODULE_AT86RF231 || MODULE_CC2420 || MODULE_MC1322X
+    memset(&p, 0, sizeof(ieee802154_packet_t));
     p.frame.payload_len = size;
+    p.frame.fcf.frame_type = IEEE_802154_DATA_FRAME;
     p.frame.fcf.dest_addr_m = IEEE_802154_SHORT_ADDR_M;
-    memset(p.frame.dest_addr, 0, sizeof(p.frame.dest_addr));
-    memcpy(&(p.frame.dest_addr[6]), &to, sizeof(uint16_t));
+    p.frame.fcf.src_addr_m = IEEE_802154_SHORT_ADDR_M;
+    p.frame.dest_addr[1] = (to & 0xff);
+    p.frame.dest_addr[0] = (to >> 8);
     p.frame.payload = buf;
+    p.frame.dest_pan_id = IEEE_802154_DEFAULT_PAN_ID;
 #else
     p.length = size;
     p.dst = (to == RIOT_BROADCAST) ? 0 : to;
@@ -79,7 +83,7 @@ int riot_send_msg(uint8_t *buf, uint16_t size, uint16_t to)
     DEBUGMSG(1, "this is a RIOT MSG based connection\n");
     DEBUGMSG(1, "size=%" PRIu16 " to=%" PRIu16 "\n", size, to);
 
-    uint8_t *buf2 = malloc(sizeof(riot_ccnl_msg_t) + size);
+    uint8_t *buf2 = ccnl_malloc(sizeof(riot_ccnl_msg_t) + size);
     if (!buf2) {
         DEBUGMSG(1, "  malloc failed...dorpping msg!\n");
         return 0;
@@ -95,7 +99,7 @@ int riot_send_msg(uint8_t *buf, uint16_t size, uint16_t to)
     m.type = CCNL_RIOT_MSG;
     m.content.ptr = (char *) rmsg;
     DEBUGMSG(1, "sending msg to pid=%" PRIkernel_pid "\n", to);
-    msg_send(&m, to, 1);
+    msg_send(&m, to);
 
     return size;
 }
@@ -105,7 +109,7 @@ void riot_send_nack(uint16_t to)
     msg_t m;
     m.type = CCNL_RIOT_NACK;
     DEBUGMSG(1, "sending NACK msg to pid=%" PRIkernel_pid"\n", to);
-    msg_send(&m, to, 0);
+    msg_try_send(&m, to);
 }
 
 void *ccnl_riot_relay_helper_start(void *);

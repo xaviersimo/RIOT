@@ -22,8 +22,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#ifdef __cplusplus
+ extern "C" {
+#endif
+
 /**
- * data type for priority queue nodes
+ * @brief data type for priority queue nodes
  */
 typedef struct priority_queue_node_t {
     struct priority_queue_node_t *next; /**< next queue node */
@@ -32,7 +36,7 @@ typedef struct priority_queue_node_t {
 } priority_queue_node_t;
 
 /**
- * data type for priority queues
+ * @brief data type for priority queues
  */
 typedef struct queue {
     priority_queue_node_t *first;        /**< first queue node */
@@ -108,6 +112,10 @@ void priority_queue_remove(priority_queue_t *root, priority_queue_node_t *node);
 #if ENABLE_DEBUG
 void priority_queue_print(priority_queue_t *root);
 void priority_queue_print_node(priority_queue_t *root);
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 /** @} */

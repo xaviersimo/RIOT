@@ -19,9 +19,6 @@
 #include "ieee802154_frame.h"
 
 #define ENABLE_DEBUG    (0)
-#if ENABLE_DEBUG
-#define DEBUG_ENABLED
-#endif
 #include "debug.h"
 
 #define IEEE_802154_FCS_POLY    (0x8408)  /* x^16 + x^12 + x^5 + 1 for LSB first */
@@ -105,7 +102,7 @@ uint8_t ieee802154_frame_init(ieee802154_frame_t *frame, uint8_t *buf)
         index += 8;
     }
 
-#ifdef DEBUG_ENABLED
+#if ENABLE_DEBUG
     DEBUG("INFO: IEEE 802.15.4 header initialized:\n");
 
     for (size_t i = 0; i < index; i++) {
@@ -186,9 +183,11 @@ uint8_t ieee802154_frame_read(uint8_t *buf, ieee802154_frame_t *frame,
 
     index++;
 
-    frame->dest_pan_id = (((uint16_t)buf[index]) << 8) | buf[index + 1];
-
-    index += 2;
+    if(frame->fcf.dest_addr_m != 0)
+    {
+        frame->dest_pan_id = (((uint16_t)buf[index]) << 8) | buf[index + 1];
+        index += 2;
+    }
 
     switch (frame->fcf.dest_addr_m) {
         case (0): {
@@ -220,8 +219,11 @@ uint8_t ieee802154_frame_read(uint8_t *buf, ieee802154_frame_t *frame,
     }
 
     if (!(frame->fcf.panid_comp == 1)) {
-        frame->src_pan_id = (((uint16_t)buf[index]) << 8) | buf[index + 1];
-        index += 2;
+        if(frame->fcf.src_addr_m != 0)
+        {
+            frame->src_pan_id = (((uint16_t)buf[index]) << 8) | buf[index + 1];
+            index += 2;
+        }
     }
 
     switch (frame->fcf.src_addr_m) {

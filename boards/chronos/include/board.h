@@ -12,16 +12,20 @@
  * @brief       Support for the chronos board
  * @{
  *
- * @file        board.h
+ * @file
  * @brief       Header for the chronos board
  *
  * @author      unknwon
  */
 
-#ifndef _MSB_BOARD_H
-#define _MSB_BOARD_H
+#ifndef _CHRONOS_BOARD_H
+#define _CHRONOS_BOARD_H
 
 #include <stdint.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 // for correct inclusion of <msp430.h>
 #ifndef __CC430F6137__
@@ -36,4 +40,9 @@
 
 typedef uint8_t radio_packet_length_t;
 
-#endif // _MSB_BOARD_H
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* _CHRONOS_BOARD_H */
+/** @} */

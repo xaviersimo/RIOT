@@ -19,7 +19,11 @@
 #ifndef __TESTS_TIMEX_H_
 #define __TESTS_TIMEX_H_
 
-#include "../unittests.h"
+#include "embUnit.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * @brief   The entry point of this test suite.
@@ -32,6 +36,10 @@ void tests_timex(void);
  * @return  embUnit tests if successful, NULL if not.
  */
 Test *tests_timex_tests(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __TESTS_TIMEX_H_ */
 /** @} */

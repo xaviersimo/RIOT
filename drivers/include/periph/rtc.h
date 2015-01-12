@@ -7,11 +7,17 @@
  */
 
 /**
+ * @defgroup    driver_periph_rtc RTC
  * @ingroup     driver_periph
  * @brief       Low-level RTC (Real Time Clock) peripheral driver
- * @{
  *
- * @file        rtc.h
+ * @note
+ * The values used for setting and getting the time/alarm should
+ * conform to the `struct tm` specification.
+ * Compare: http://pubs.opengroup.org/onlinepubs/7908799/xsh/time.h.html
+ *
+ * @{
+ * @file
  * @brief       Low-level RTC peripheral driver interface definitions
  *
  * @author      Thomas Eichinger <thomas.eichinger@fu-berlin.de>
@@ -22,6 +28,10 @@
 
 #include <time.h>
 #include "periph_conf.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* guard file in case no RTC device was specified */
 #if RTC_NUMOF
@@ -63,9 +73,6 @@ int rtc_get_time(struct tm *time);
  *
  * @note Any already set alarm will be overwritten.
  *
- * The values in `tm` are expected to conform to the `struct tm` specification.
- * Compare: http://pubs.opengroup.org/onlinepubs/7908799/xsh/time.h.html
- *
  * @param[in] time          The value to trigger an alarm when hit.
  * @param[in] cb            Callback executed when alarm is hit.
  * @param[in] arg           Argument passed to callback when alarm is hit.
@@ -102,5 +109,10 @@ void rtc_poweron(void);
 void rtc_poweroff(void);
 
 #endif /* RTC_NUMOF */
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif /* __RTC_H */
 /** @} */

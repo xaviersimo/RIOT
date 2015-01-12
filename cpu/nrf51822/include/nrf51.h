@@ -44,11 +44,11 @@
 
 
 
-/** @addtogroup Nordic Semiconductor
+/** @addtogroup cpu_specific_Nordic Semiconductor
   * @{
   */
 
-/** @addtogroup nRF51
+/** @addtogroup cpu_specific_nRF51
   * @{
   */
 
@@ -116,15 +116,22 @@ typedef enum {
 #define __Vendor_SysTickConfig         0            /*!< Set to 1 if different SysTick Config is used                          */
 /** @} */ /* End of group Configuration_of_CMSIS */
 
+#ifdef __cplusplus
+}
+#endif
+
 #include <core_cm0.h>                               /*!< Cortex-M0 processor and core peripherals                              */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* ================================================================================ */
 /* ================       Device Specific Peripheral Section       ================ */
 /* ================================================================================ */
 
 
-/** @addtogroup Device_Peripheral_Registers
+/** @addtogroup cpu_specific_Device_Peripheral_Registers
   * @{
   */
 

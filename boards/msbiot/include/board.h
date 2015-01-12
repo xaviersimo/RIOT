@@ -23,6 +23,12 @@
 
 #include "cpu.h"
 #include "periph_conf.h"
+#include "periph/gpio.h"
+#include "periph/spi.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * Define the nominal CPU core clock in this board
@@ -33,6 +39,19 @@
  * @name Assign the hardware timer
  */
 #define HW_TIMER            TIMER_0
+
+/**
+ * @name Configure connected CC1101 (radio) device
+ * @{
+ */
+#define CC110X_SPI          SPI_0
+#define CC110X_CS           GPIO_7
+#define CC110X_GDO0         GPIO_11
+#define CC110X_GDO1         GPIO_2
+#define CC110X_GDO2         GPIO_12
+
+typedef uint8_t radio_packet_length_t;
+/** @} */
 
 /**
  * @name Define UART device and baudrate for stdio
@@ -72,6 +91,10 @@
  * @brief Initialize board specific hardware, including clock, LEDs and std-IO
  */
 void board_init(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /** __BOARD_H */
 /** @} */

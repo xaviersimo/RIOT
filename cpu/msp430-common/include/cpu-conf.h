@@ -9,6 +9,10 @@
 #ifndef CPUCONF_H_
 #define CPUCONF_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @name Kernel configuration
  * @{
@@ -29,6 +33,15 @@
 #ifndef UART0_BUFSIZE
 #define UART0_BUFSIZE                   (32)
 #endif
+
+#ifndef PKTBUF_SIZE
+#define PKTBUF_SIZE                     (2560) /*  TODO: Make this value
+                                                   overall MTU dependent */
+#endif
 /** @} */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* CPUCONF_H_ */

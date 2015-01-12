@@ -10,7 +10,7 @@
  * @ingroup     board_pca10000
  * @{
  *
- * @file        periph_conf.h
+ * @file
  * @brief       Peripheral MCU configuration for the nRF51822 board pca10000
  *
  * @author      Christian Kühling <kuehling@zedat.fu-berlin.de>
@@ -20,6 +20,23 @@
 
 #ifndef __PERIPH_CONF_H
 #define __PERIPH_CONF_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/**
+ * @name Clock configuration
+ *
+ * @note: the radio will not work with the internal RC oscillator!
+ *
+ * @{
+ */
+#define CLOCK_CORECLOCK     (16000000U)     /* fixed for all NRF51822 */
+#define CLOCK_CRYSTAL       (16U)           /* set to  0: internal RC oscillator
+                                                      16: 16MHz crystal
+                                                      32: 32MHz crystal */
+/** @} */
 
 /**
  * @name Timer configuration
@@ -34,8 +51,8 @@
 /* Timer 0 configuration */
 #define TIMER_0_DEV         NRF_TIMER0
 #define TIMER_0_CHANNELS    3
-#define TIMER_0_MAX_VALUE   (0xffffffff)
-#define TIMER_0_BITMODE     TIMER_BITMODE_BITMODE_32Bit
+#define TIMER_0_MAX_VALUE   (0xffffff)
+#define TIMER_0_BITMODE     TIMER_BITMODE_BITMODE_24Bit
 #define TIMER_0_ISR         isr_timer0
 #define TIMER_0_IRQ         TIMER0_IRQn
 
@@ -79,13 +96,12 @@
 #define UART_0_EN           1
 #define UART_IRQ_PRIO       1
 
-/* UART 0 device configuration */
-#define UART_0_DEV          NRF_UART0
-#define UART_0_HWFLOWCTRL   1
-#define UART_0_PIN_RX       11
-#define UART_0_PIN_TX       9
-#define UART_0_PIN_RTS      8
-#define UART_0_PIN_CTS      10
+/* UART pin configuration */
+#define UART_HWFLOWCTRL   1
+#define UART_PIN_RX       11
+#define UART_PIN_TX       9
+#define UART_PIN_RTS      8
+#define UART_PIN_CTS      10
 /** @} */
 
 /**
@@ -136,5 +152,9 @@
 #define GPIO_14_PIN         14
 #define GPIO_15_PIN         15
 /** @} */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __PERIPH_CONF_H */

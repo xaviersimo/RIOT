@@ -18,11 +18,11 @@
  * set a flag and trigger a worker thread).
  *
  * <b>The hardware timer should not be used (until you know what
- * you're doing)<b>, use \ref sys_vtimer instead.
+ * you're doing)</b>, use \ref sys_vtimer instead.
  *
  * @{
  *
- * @file        hwtimer.h
+ * @file
  * @brief       HW-timer abstraction
  *
  * @author      Heiko Will
@@ -37,6 +37,10 @@
 #include "hwtimer_cpu.h"
 #include "board.h"
 
+#ifdef __cplusplus
+ extern "C" {
+#endif
+
 /**
  * @brief   Number of kernel timer ticks per second
  * @def     HWTIMER_SPEED
@@ -49,8 +53,8 @@ per second for the current architecture."
 /**
  * @brief       Upper bound for hwtimer_spin
  *
- * @verbatim    Barrier below which hwtimer_spin is called instead of
- *              setting a timer and yielding the thread.
+ * @note        Barrier starting from which hwtimer_spin is called instead
+ *              of setting a timer and yielding the thread.
  *
  *              Boards should override this.
  *
@@ -63,7 +67,7 @@ per second for the current architecture."
 /**
  * @brief       Overhead of the `hwtimer_wait` function
  *
- * @verbatim    This value is used to decrease the number of ticks that
+ * @note        This value is used to decrease the number of ticks that
  *              `hwtimer_wait` uses to set the actual hardware timer.
  *
  *              The goal is to make sure the number of ticks spent in the
@@ -82,14 +86,22 @@ per second for the current architecture."
  * @param[in]   us number of microseconds
  * @return      kernel timer ticks
  */
-#define HWTIMER_TICKS(us) ((us) / (1000000L / HWTIMER_SPEED))
+#if HWTIMER_SPEED > 1000000L
+#define HWTIMER_TICKS(us)        ((us) * (HWTIMER_SPEED / 1000000L))
+#else
+#define HWTIMER_TICKS(us)        ((us) / (1000000L / HWTIMER_SPEED))
+#endif
 
 /**
  * @brief       Convert ticks to microseconds
  * @param[in]   ticks   number of ticks
  * @return      microseconds
  */
-#define HWTIMER_TICKS_TO_US(ticks) ((ticks) * (1000000L/HWTIMER_SPEED))
+#if HWTIMER_SPEED > 1000000L
+#define HWTIMER_TICKS_TO_US(ticks)        ((ticks) / (HWTIMER_SPEED / 1000000L))
+#else
+#define HWTIMER_TICKS_TO_US(ticks)        ((ticks) * (1000000L / HWTIMER_SPEED))
+#endif
 
 /**
  * @brief   Maximum hwtimer tick count (before overflow)
@@ -103,7 +115,11 @@ number of ticks countable on the current architecture."
 /**
  * @brief   microseconds before hwtimer overflow
  */
-#define HWTIMER_OVERFLOW_MICROS() (1000000L / HWTIMER_SPEED * HWTIMER_MAXTICKS)
+#if HWTIMER_SPEED > 1000000L
+#define HWTIMER_OVERFLOW_MICROS()        (HWTIMER_MAXTICKS / HWTIMER_SPEED * 1000000L)
+#else
+#define HWTIMER_OVERFLOW_MICROS()        (1000000L / HWTIMER_SPEED * HWTIMER_MAXTICKS)
+#endif
 
 typedef uint32_t timer_tick_t; /**< data type for hwtimer ticks */
 
@@ -171,6 +187,10 @@ void hwtimer_init_comp(uint32_t fcpu);
  * @param[in]   ticks        Number of kernel ticks to delay
  */
 void hwtimer_spin(unsigned long ticks);
+
+#ifdef __cplusplus
+}
+#endif
 
 /** @} */
 #endif /* __HWTIMER_H */

@@ -7,19 +7,21 @@
  */
 
 /**
+ * @defgroup    driver_periph_random Random
  * @ingroup     driver_periph
- * @{
+ * @brief       Low-level (pseudo) random number generator driver
  *
- * @file
- * @brief       (Pseudo) random number generator low-level driver interface
- *
- * NOTE: The quality of the random data read from this interface is highly
+ * The quality of the random data read from this interface is highly
  * dependent on hardware dependent implementation. Most platforms utilize a
  * hardware (Pseudo) Random Number Generator. The quality of the generated
  * random data can be however very different.
  *
  * @note REFER TO YOUR PLATFORMS IMPLEMENTATION ABOUT INFORMATION ABOUT THE
  *       QUALITY OF RANDOMNES!
+ *
+ * @{
+ * @file
+ * @brief       Low-level random peripheral driver interface definitions
  *
  * @author      Christian Mehlis <mehlis@inf.fu-berlin.de>
  */
@@ -28,6 +30,10 @@
 #define __RANDOM_H
 
 #include "periph_conf.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* only include this file if a random number generator is defined */
 #if RANDOM_NUMOF
@@ -66,6 +72,10 @@ void random_poweron(void);
 void random_poweroff(void);
 
 #endif /* RANDOM_NUMOF */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __RANDOM_H */
 /** @} */

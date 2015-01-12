@@ -43,7 +43,7 @@ ipv6_addr_t init_threeway_handshake(void)
     border_syn_packet_t *syn;
     msg_t m;
     m.content.ptr = NULL;
-    msg_send(&m, border_get_serial_reader(), 1);
+    msg_send(&m, border_get_serial_reader());
     msg_receive(&m);
 
     syn = (border_syn_packet_t *)m.content.ptr;
@@ -114,7 +114,7 @@ static int set_timeout(vtimer_t *timeout, timex_t val, void *args)
     vtimer_remove(timeout);
 
     timex_normalize(&val);
-    return vtimer_set_msg(timeout, val, sending_slot_pid, args);
+    return vtimer_set_msg(timeout, val, sending_slot_pid, MSG_TIMER, args);
 }
 
 static int in_window(uint8_t seq_num, uint8_t min, uint8_t max)

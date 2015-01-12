@@ -73,7 +73,9 @@ Frame type value:
        011 | MAC command
        1xx | Reserved
   </pre>
-*/
+
+  *  This corresponds to IEEE 802.15.4 frame format.
+  */
 
 #ifndef CC2420_H
 #define CC2420_H
@@ -85,6 +87,10 @@ Frame type value:
 #include "cc2420_settings.h"
 
 #include "radio_driver.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define CC2420_MAX_PKT_LENGTH 127
 #define CC2420_MAX_DATA_LENGTH (118)
@@ -396,5 +402,8 @@ static inline void do_set_tx_power(int pow) {
  */
 extern const ieee802154_radio_driver_t cc2420_radio_driver;
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif

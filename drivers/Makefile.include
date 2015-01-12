@@ -4,9 +4,36 @@ endif
 ifneq (,$(filter cc110x,$(USEMODULE)))
     USEMODULE_INCLUDES += $(RIOTBASE)/drivers/cc110x/include
 endif
-ifneq (,$(filter cc110x_ng,$(USEMODULE)))
-    USEMODULE_INCLUDES += $(RIOTBASE)/drivers/cc110x_ng/include
+ifneq (,$(filter cc110x_legacy_csma,$(USEMODULE)))
+    USEMODULE_INCLUDES += $(RIOTBASE)/drivers/cc110x_legacy_csma/include
+endif
+ifneq (,$(filter cc110x_legacy,$(USEMODULE)))
+    USEMODULE_INCLUDES += $(RIOTBASE)/drivers/cc110x_legacy/include
 endif
 ifneq (,$(filter at86rf231,$(USEMODULE)))
     USEMODULE_INCLUDES += $(RIOTBASE)/drivers/at86rf231/include
+endif
+ifneq (,$(filter isl29020,$(USEMODULE)))
+    USEMODULE_INCLUDES += $(RIOTBASE)/drivers/isl29020/include
+endif
+ifneq (,$(filter lps331ap,$(USEMODULE)))
+    USEMODULE_INCLUDES += $(RIOTBASE)/drivers/lps331ap/include
+endif
+ifneq (,$(filter lsm303dlhc,$(USEMODULE)))
+    USEMODULE_INCLUDES += $(RIOTBASE)/drivers/lsm303dlhc/include
+endif
+ifneq (,$(filter l3g4200d,$(USEMODULE)))
+    USEMODULE_INCLUDES += $(RIOTBASE)/drivers/l3g4200d/include
+endif
+ifneq (,$(filter nrf24l01p,$(USEMODULE)))
+    USEMODULE_INCLUDES += $(RIOTBASE)/drivers/nrf24l01p/include
+endif
+ifneq (,$(filter mpl3115a2,$(USEMODULE)))
+    USEMODULE_INCLUDES += $(RIOTBASE)/drivers/mpl3115a2/include
+endif
+ifneq (,$(filter mma8652,$(USEMODULE)))
+    USEMODULE_INCLUDES += $(RIOTBASE)/drivers/mma8652/include
+endif
+ifneq (,$(filter mag3110,$(USEMODULE)))
+    USEMODULE_INCLUDES += $(RIOTBASE)/drivers/mag3110/include
 endif

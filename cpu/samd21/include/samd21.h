@@ -1,4 +1,4 @@
-/**
+/*
  * \file
  *
  * \brief Header file for SAMR21G18A
@@ -45,8 +45,8 @@
 #define _SAMR21G18A_
 
 /**
- * \ingroup SAMR21_definitions
- * \addtogroup SAMR21G18A_definitions SAMR21G18A definitions
+ * \ingroup cpu_specific_SAMR21_definitions
+ * \addtogroup cpu_specific_SAMR21G18A_definitions SAMR21G18A definitions
  * This file defines all structures and symbols for SAMR21G18A:
  *   - registers and bitfields
  *   - peripheral base address
@@ -55,12 +55,13 @@
 */
 /*@{*/
 
+#if !(defined(__ASSEMBLY__) || defined(__IAR_SYSTEMS_ASM__))
+#include <stdint.h>
+
 #ifdef __cplusplus
  extern "C" {
 #endif
 
-#if !(defined(__ASSEMBLY__) || defined(__IAR_SYSTEMS_ASM__))
-#include <stdint.h>
 #ifndef __cplusplus
 typedef volatile const uint32_t RoReg;   /**< Read only 32-bit register (volatile const unsigned int) */
 typedef volatile const uint16_t RoReg16; /**< Read only 16-bit register (volatile const unsigned int) */
@@ -237,6 +238,10 @@ void I2S_Handler                 ( void );
  * \brief CMSIS includes
  */
 
+#ifdef __cplusplus
+}
+#endif
+
 #include <core_cm0plus.h>
 #if !defined DONT_USE_CMSIS_INIT
 #include "system_samd21.h"
@@ -247,7 +252,7 @@ void I2S_Handler                 ( void );
 /* ************************************************************************** */
 /**  SOFTWARE PERIPHERAL API DEFINITION FOR SAMR21G18A */
 /* ************************************************************************** */
-/** \defgroup SAMR21G18A_api Peripheral Software API */
+/** \defgroup cpu_specific_SAMR21G18A_api Peripheral Software API */
 /*@{*/
 
 #include "component/component_ac.h"
@@ -275,7 +280,7 @@ void I2S_Handler                 ( void );
 /* ************************************************************************** */
 /**  REGISTERS ACCESS DEFINITIONS FOR SAMR21G18A */
 /* ************************************************************************** */
-/** \defgroup SAMR21G18A_reg Registers Access Definitions */
+/** \defgroup cpu_specific_SAMR21G18A_reg Registers Access Definitions */
 /*@{*/
 
 #include "instance/instance_ac.h"
@@ -314,7 +319,7 @@ void I2S_Handler                 ( void );
 /* ************************************************************************** */
 /**  PERIPHERAL ID DEFINITIONS FOR SAMR21G18A */
 /* ************************************************************************** */
-/** \defgroup SAMR21G18A_id Peripheral Ids Definitions */
+/** \defgroup cpu_specific_SAMR21G18A_id Peripheral Ids Definitions */
 /*@{*/
 
 // Peripheral instances on HPB0 bridge
@@ -361,7 +366,7 @@ void I2S_Handler                 ( void );
 /* ************************************************************************** */
 /**  BASE ADDRESS DEFINITIONS FOR SAMR21G18A */
 /* ************************************************************************** */
-/** \defgroup SAMR21G18A_base Peripheral Base Address Definitions */
+/** \defgroup cpu_specific_SAMR21G18A_base Peripheral Base Address Definitions */
 /*@{*/
 
 #if defined(__ASSEMBLY__) || defined(__IAR_SYSTEMS_ASM__)
@@ -514,7 +519,7 @@ void I2S_Handler                 ( void );
 /* ************************************************************************** */
 /**  PORT DEFINITIONS FOR SAMR21G18A */
 /* ************************************************************************** */
-/** \defgroup SAMR21G18A_port PORT Definitions */
+/** \defgroup cpu_specific_SAMR21G18A_port PORT Definitions */
 /*@{*/
 
 #include "pio/pio_samr21g18a.h"
@@ -541,11 +546,6 @@ void I2S_Handler                 ( void );
 /* ************************************************************************** */
 /**  ELECTRICAL DEFINITIONS FOR SAMR21G18A */
 /* ************************************************************************** */
-
-
-#ifdef __cplusplus
-}
-#endif
 
 /*@}*/
 

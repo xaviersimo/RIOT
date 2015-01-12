@@ -7,16 +7,17 @@
  */
 
 /**
+ * @defgroup    driver_periph_spi SPI
  * @ingroup     driver_periph
  * @brief       Low-level SPI peripheral driver
- * @{
- *
- * @file
- * @brief       Low-level SPI peripheral driver interface definitions
  *
  * The current design of this interface targets implementations that use the SPI in blocking mode.
  *
  * TODO: add means for asynchronous SPI usage
+ *
+ * @{
+ * @file
+ * @brief       Low-level SPI peripheral driver interface definitions
  *
  * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
  */
@@ -25,6 +26,10 @@
 #define __SPI_H
 
 #include "periph_conf.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* add guard for the case that no SPI device is defined */
 #if SPI_NUMOF
@@ -106,6 +111,16 @@ int spi_init_master(spi_t dev, spi_conf_t conf, spi_speed_t speed);
  * @return              -1 on error
  */
 int spi_init_slave(spi_t dev, spi_conf_t conf, char (*cb)(char data));
+
+/**
+ * @brief Configure SCK, MISO and MOSI pins for the given SPI device
+ *
+ * @param[in] dev       SPI device to use
+ *
+ * @return              0 on success
+ * @return              -1 on error
+ */
+int spi_conf_pins(spi_t dev);
 
 /**
  * @brief Transfer one byte on the given SPI bus
@@ -190,6 +205,10 @@ void spi_poweron(spi_t dev);
 void spi_poweroff(spi_t dev);
 
 #endif /* SPI_NUMOF */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __SPI_H */
 /** @} */

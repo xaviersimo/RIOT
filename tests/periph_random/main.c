@@ -20,19 +20,15 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <vtimer.h>
-#include <periph/random.h>
-#include <periph_conf.h>
 
-/* only compile test if a random number generator is defined */
-#if RANDOM_NUMOF
+#include "vtimer.h"
+#include "periph/random.h"
 
 #define LIMIT       (20U)
 
 int main(void)
 {
     char buf[LIMIT];
-    int count = 0;
 
     puts("\nRandom number generator low-level driver test\n");
     printf("This test will print from 1 to %i random bytes about every second\n\n", LIMIT);
@@ -45,18 +41,18 @@ int main(void)
         memset(buf, 0, sizeof(buf));
 
         /* create random numbers */
-        for (int i = 1; i <= LIMIT; i++) {
-            printf("generating %i random byte(s)\n", i);
-            count = random_read(buf, i);
+        for (unsigned i = 1; i <= LIMIT; i++) {
+            printf("generating %u random byte(s)\n", i);
+            unsigned count = random_read(buf, i);
 
             if (count != i) {
-                printf("Error generating random bytes, got %i instead of %i", count, i);
+                printf("Error generating random bytes, got %u instead of %u", count, i);
                 return 0;
             }
 
             printf("Got:");
-            for (int j = 0; j < i; j++) {
-                printf(" 0x%02x", buf[j]);
+            for (unsigned j = 0; j < i; j++) {
+                printf(" 0x%02x", (unsigned char)buf[j]);
             }
             printf("\n");
         }
@@ -66,14 +62,3 @@ int main(void)
 
     return 0;
 }
-
-#else
-
-int main(void)
-{
-    puts("Random number generator low-level driver test");
-    puts("There is no (pseudo) random generator implementation for your platform");
-    return 0;
-}
-
-#endif /* RANDOM_NUMOF */

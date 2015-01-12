@@ -33,23 +33,22 @@
  * TODO: remove once core was adjusted
  */
 #include "irq.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define eINT            enableIRQ
 #define dINT            disableIRQ
-
-/**
- * @brief Macro has to be called in the beginning of each ISR
- */
-#define ISR_ENTER()         asm("push {LR}")
-
-/**
- * @brief Macro has to be called on each exit of an ISR
- */
-#define ISR_EXIT()          asm("pop {r0} \n bx r0")
 
 /**
  * @brief Initialization of the CPU
  */
 void cpu_init(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __CPU_H */
 /** @} */

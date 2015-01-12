@@ -37,31 +37,51 @@
 #include "thread.h"
 
 static int _msg_receive(msg_t *m, int block);
+static int _msg_send(msg_t *m, kernel_pid_t target_pid, bool block, unsigned state);
 
-
-static int queue_msg(tcb_t *target, msg_t *m)
+static int queue_msg(tcb_t *target, const msg_t *m)
 {
     int n = cib_put(&(target->msg_queue));
-
-    if (n != -1) {
-        target->msg_array[n] = *m;
-        return 1;
+    if (n < 0) {
+        DEBUG("queue_msg(): message queue is full (or there is none)\n");
+        return 0;
     }
 
-    return 0;
+    DEBUG("queue_msg(): queuing message\n");
+    msg_t *dest = &target->msg_array[n];
+    *dest = *m;
+    return 1;
 }
 
-int msg_send(msg_t *m, kernel_pid_t target_pid, bool block)
+int msg_send(msg_t *m, kernel_pid_t target_pid)
 {
     if (inISR()) {
         return msg_send_int(m, target_pid);
     }
-
     if (sched_active_pid == target_pid) {
         return msg_send_to_self(m);
     }
+    return _msg_send(m, target_pid, true, disableIRQ());
+}
 
-    dINT();
+int msg_try_send(msg_t *m, kernel_pid_t target_pid)
+{
+    if (inISR()) {
+        return msg_send_int(m, target_pid);
+    }
+    if (sched_active_pid == target_pid) {
+        return msg_send_to_self(m);
+    }
+    return _msg_send(m, target_pid, false, disableIRQ());
+}
+
+static int _msg_send(msg_t *m, kernel_pid_t target_pid, bool block, unsigned state)
+{
+#if DEVELHELP
+    if (!pid_is_valid(target_pid)) {
+        DEBUG("msg_send(): target_pid is invalid, continuing anyways\n");
+    }
+#endif /* DEVELHELP */
 
     tcb_t *target = (tcb_t*) sched_threads[target_pid];
 
@@ -69,7 +89,7 @@ int msg_send(msg_t *m, kernel_pid_t target_pid, bool block)
 
     if (target == NULL) {
         DEBUG("msg_send(): target thread does not exist\n");
-        eINT();
+        restoreIRQ(state);
         return -1;
     }
 
@@ -77,18 +97,18 @@ int msg_send(msg_t *m, kernel_pid_t target_pid, bool block)
 
     if (target->status != STATUS_RECEIVE_BLOCKED) {
         DEBUG("msg_send() %s:%i: Target %" PRIkernel_pid " is not RECEIVE_BLOCKED.\n", __FILE__, __LINE__, target_pid);
-        if (target->msg_array && queue_msg(target, m)) {
+        if (queue_msg(target, m)) {
             DEBUG("msg_send() %s:%i: Target %" PRIkernel_pid " has a msg_queue. Queueing message.\n", __FILE__, __LINE__, target_pid);
-            eINT();
+            restoreIRQ(state);
             if (sched_active_thread->status == STATUS_REPLY_BLOCKED) {
-                thread_yield();
+                thread_yield_higher();
             }
             return 1;
         }
 
         if (!block) {
             DEBUG("msg_send: %s: Receiver not waiting, block=%u\n", sched_active_thread->name, block);
-            eINT();
+            restoreIRQ(state);
             return 0;
         }
 
@@ -115,6 +135,9 @@ int msg_send(msg_t *m, kernel_pid_t target_pid, bool block)
         sched_set_status((tcb_t*) sched_active_thread, newstatus);
 
         DEBUG("msg_send: %s: Back from send block.\n", sched_active_thread->name);
+
+        restoreIRQ(state);
+        thread_yield_higher();
     }
     else {
         DEBUG("msg_send: %s: Direct msg copy from %" PRIkernel_pid " to %" PRIkernel_pid ".\n", sched_active_thread->name, thread_getpid(), target_pid);
@@ -122,17 +145,17 @@ int msg_send(msg_t *m, kernel_pid_t target_pid, bool block)
         msg_t *target_message = (msg_t*) target->wait_data;
         *target_message = *m;
         sched_set_status(target, STATUS_PENDING);
-    }
 
-    eINT();
-    thread_yield();
+        restoreIRQ(state);
+        thread_yield_higher();
+    }
 
     return 1;
 }
 
 int msg_send_to_self(msg_t *m)
 {
-    unsigned int state = disableIRQ();
+    unsigned state = disableIRQ();
 
     m->sender_pid = sched_active_pid;
     int res = queue_msg((tcb_t *) sched_active_thread, m);
@@ -143,6 +166,12 @@ int msg_send_to_self(msg_t *m)
 
 int msg_send_int(msg_t *m, kernel_pid_t target_pid)
 {
+#if DEVELHELP
+    if (!pid_is_valid(target_pid)) {
+        DEBUG("msg_send(): target_pid is invalid, continuing anyways\n");
+    }
+#endif /* DEVELHELP */
+
     tcb_t *target = (tcb_t *) sched_threads[target_pid];
 
     if (target == NULL) {
@@ -150,10 +179,10 @@ int msg_send_int(msg_t *m, kernel_pid_t target_pid)
         return -1;
     }
 
+    m->sender_pid = KERNEL_PID_ISR;
     if (target->status == STATUS_RECEIVE_BLOCKED) {
         DEBUG("msg_send_int: Direct msg copy from %" PRIkernel_pid " to %" PRIkernel_pid ".\n", thread_getpid(), target_pid);
 
-        m->sender_pid = target_pid;
 
         /* copy msg to target */
         msg_t *target_message = (msg_t*) target->wait_data;
@@ -171,19 +200,18 @@ int msg_send_int(msg_t *m, kernel_pid_t target_pid)
 
 int msg_send_receive(msg_t *m, msg_t *reply, kernel_pid_t target_pid)
 {
-    dINT();
+    unsigned state = disableIRQ();
     tcb_t *me = (tcb_t*) sched_threads[sched_active_pid];
     sched_set_status(me, STATUS_REPLY_BLOCKED);
     me->wait_data = (void*) reply;
 
     /* msg_send blocks until reply received */
-
-    return msg_send(m, target_pid, true);
+    return _msg_send(m, target_pid, true, state);
 }
 
 int msg_reply(msg_t *m, msg_t *reply)
 {
-    int state = disableIRQ();
+    unsigned state = disableIRQ();
 
     tcb_t *target = (tcb_t*) sched_threads[m->sender_pid];
 
@@ -203,8 +231,9 @@ int msg_reply(msg_t *m, msg_t *reply)
     msg_t *target_message = (msg_t*) target->wait_data;
     *target_message = *reply;
     sched_set_status(target, STATUS_PENDING);
+    uint16_t target_prio = target->priority;
     restoreIRQ(state);
-    thread_yield();
+    sched_switch(target_prio);
 
     return 1;
 }
@@ -237,7 +266,7 @@ int msg_receive(msg_t *m)
 
 static int _msg_receive(msg_t *m, int block)
 {
-    dINT();
+    unsigned state = disableIRQ();
     DEBUG("_msg_receive: %s: _msg_receive.\n", sched_active_thread->name);
 
     tcb_t *me = (tcb_t*) sched_threads[sched_active_pid];
@@ -250,7 +279,7 @@ static int _msg_receive(msg_t *m, int block)
 
     /* no message, fail */
     if ((!block) && (queue_index == -1)) {
-        eINT();
+        restoreIRQ(state);
         return -1;
     }
 
@@ -271,13 +300,13 @@ static int _msg_receive(msg_t *m, int block)
             DEBUG("_msg_receive(): %s: No msg in queue. Going blocked.\n", sched_active_thread->name);
             sched_set_status(me, STATUS_RECEIVE_BLOCKED);
 
-            eINT();
-            thread_yield();
+            restoreIRQ(state);
+            thread_yield_higher();
 
             /* sender copied message */
         }
         else {
-            eINT();
+            restoreIRQ(state);
         }
 
         return 1;
@@ -298,12 +327,17 @@ static int _msg_receive(msg_t *m, int block)
         *m = *sender_msg;
 
         /* remove sender from queue */
+        uint16_t sender_prio = PRIORITY_IDLE;
         if (sender->status != STATUS_REPLY_BLOCKED) {
             sender->wait_data = NULL;
             sched_set_status(sender, STATUS_PENDING);
+            sender_prio = sender->priority;
         }
 
-        eINT();
+        restoreIRQ(state);
+        if (sender_prio < PRIORITY_IDLE) {
+            sched_switch(sender_prio);
+        }
         return 1;
     }
 

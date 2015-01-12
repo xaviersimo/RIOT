@@ -29,6 +29,9 @@
 #include "sched.h"
 #include "thread.h"
 
+/* guard file in case no UART device is defined */
+#if UART_0_EN || UART_1_EN
+
 /**
  * @brief Each UART device has to store two callbacks.
  */
@@ -87,6 +90,7 @@ int uart_init(uart_t uart, uint32_t baudrate, uart_rx_cb_t rx_cb, uart_tx_cb_t t
     /* register callbacks */
     config[uart].rx_cb = rx_cb;
     config[uart].tx_cb = tx_cb;
+    config[uart].arg = arg;
 
     return 0;
 }
@@ -270,39 +274,40 @@ int uart_write_blocking(uart_t uart, char data)
 }
 
 #if UART_0_EN
-__attribute__((naked)) void UART_0_ISR(void)
+void UART_0_ISR(void)
 {
-    ISR_ENTER();
     irq_handler(UART_0, UART_0_DEV);
-    ISR_EXIT();
 }
 #endif
 
 #if UART_1_EN
-__attribute__((naked)) void UART_1_ISR(void)
+void UART_1_ISR(void)
 {
-    ISR_ENTER();
     irq_handler(UART_1, UART_1_DEV);
-    ISR_EXIT();
 }
 #endif
 
-static inline void irq_handler(uint8_t uartnum, USART_TypeDef *dev)
+static inline void irq_handler(uart_t uartnum, USART_TypeDef *dev)
 {
     if (dev->SR & USART_SR_RXNE) {
         char data = (char)dev->DR;
-        config[uartnum].rx_cb(config[uartnum].arg, data);
+        if (config[uartnum].rx_cb != NULL) {
+        	config[uartnum].rx_cb(config[uartnum].arg, data);
+        }
     }
     else if (dev->SR & USART_SR_ORE) {
         /* ORE is cleared by reading SR and DR sequentially */
         dev->DR;
     }
     else if (dev->SR & USART_SR_TXE) {
-        if (config[uartnum].tx_cb(config[uartnum].arg) == 0) {
-            dev->CR1 &= ~(USART_CR1_TXEIE);
-        }
+    	if (config[uartnum].tx_cb != NULL) {
+    		if (config[uartnum].tx_cb(config[uartnum].arg) == 0) {
+    			dev->CR1 &= ~(USART_CR1_TXEIE);
+    		}
+    	}
     }
     if (sched_context_switch_request) {
         thread_yield();
     }
 }
+#endif /* UART_0_EN || UART_1_EN */

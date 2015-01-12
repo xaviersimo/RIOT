@@ -87,7 +87,7 @@ void *timer_thread(void *arg)
             printf("WARNING: timer difference %" PRId64 "us exceeds MAXDIFF(%d)!\n", diff, MAXDIFF);
         }
 
-        if (vtimer_set_msg(&tmsg->timer, tmsg->interval, thread_getpid(), tmsg) != 0) {
+        if (vtimer_set_msg(&tmsg->timer, tmsg->interval, thread_getpid(), MSG_TIMER, tmsg) != 0) {
             puts("something went wrong setting a timer");
         }
 
@@ -115,7 +115,7 @@ int main(void)
     for (unsigned i = 0; i < sizeof(timer_msgs)/sizeof(struct timer_msg); i++) {
         printf("Sending timer msg %u...\n", i);
         m.content.ptr = (char *) &timer_msgs[i];
-        msg_send(&m, pid, false);
+        msg_try_send(&m, pid);
     }
 
     return 0;

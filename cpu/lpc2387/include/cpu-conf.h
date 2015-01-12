@@ -10,6 +10,10 @@
 #ifndef CPUCONF_H_
 #define CPUCONF_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @ingroup     conf
  * @ingroup     lpc2387
@@ -26,16 +30,6 @@
  *
  * @note        $Id$
  */
-
-#define FEUERWARE_CONF_CPU_NAME         "NXP LPC2387"
-
-/**
- * @name CPU capabilities
- * @{
- */
-#define FEUERWARE_CPU_LPC2387                   1
-#define FEUERWARE_CONF_CORE_SUPPORTS_TIME       1
-/** @} */
 
 /**
  * @name Stdlib configuration
@@ -76,6 +70,9 @@
 #define UART0_BUFSIZE                   (128)
 #endif
 
+#ifdef __cplusplus
+}
+#endif
 
 /** @} */
 #endif /* CPUCONF_H_ */
