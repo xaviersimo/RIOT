@@ -47,7 +47,7 @@ void *second_thread(void *arg)
 
     while (1) {
         vtimer_now(&now_thread);
-        flag = 1;
+        //flag = 1;
         thread_sleep();
     }
 
@@ -55,6 +55,9 @@ void *second_thread(void *arg)
 }
 
 
+/*
+What is this for???
+*/
 void *vector_latency(void *arg)
 {
     (void) arg;
@@ -137,7 +140,7 @@ int main(void)
 
     vtimer_now(&now);
     next = now + interval;
-    while(1){
+    while(1) {
         if(flag && (i < time)) {
             vtimer_usleep(interval.microseconds); // sleep
             vtimer_now(&now); // get actual time after sleep (:=now)
@@ -145,9 +148,11 @@ int main(void)
                                // and actual time after sleep (:=now)
             next += interval; // update theoretical time for next iteration
             
-            flag = 0;
+            flag = 0; // ???
             i += 1;
 
+            if (diff.microseconds > 99999) // guard for overflow
+                diff.microseconds = 0x100000000 - diff.microseconds;
             count[diff.microseconds] += 1; // store diff result for statistics
 
             // x+=1;
