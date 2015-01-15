@@ -150,7 +150,7 @@ int main(void)
 	kernel_pid_t pid[THREADS];
 	char buffer[THREADS][11];
 
-for(th=1 ; th < THREADS; th++)
+	for(th=1 ; th < THREADS; th++)
 	{
 	sprintf(buffer[th], "th_back_%d", th);
 //	printf("buffer is:%s\n", buffer[th]);
@@ -162,7 +162,7 @@ for(th=1 ; th < THREADS; th++)
 			NULL,
 			buffer[th]);
 	}
-thread_yield();
+	thread_yield();
 
 	while(1) {
 		if(test_repeats == iteration) {
