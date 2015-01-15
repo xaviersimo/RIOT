@@ -25,225 +25,200 @@
 #include "gpio.h"
 #include "thread.h"
 #include "msg.h"
+#include "ps.h"
+
+#define THREADS			(15)
+#define THREAD_LATENCY  (3)  //Define the pid number to measure latency.
+
+char stack[THREADS][KERNEL_CONF_STACKSIZE_MAIN];
+
 
 #define MSEC (1000)
 #define SEC (1000 * MSEC)
-char stack[15][KERNEL_CONF_STACKSIZE_MAIN];
-//char  stack_1[KERNEL_CONF_STACKSIZE_MAIN];
-char latency_vector_stack[KERNEL_CONF_STACKSIZE_MAIN];
+#define MAX_LATENCY 1000
 
+/*Define vectors to print histogram*/
+int latency[MAX_LATENCY] = {0}; /* define vector for latency */
+int count[MAX_LATENCY] = {0};
+int overflow = 0;
 
-/*Global variables*/
-int index=100;
-int latency[1000]={0}; /*define vector for latency*/
-int count[1000]={0};
+int thread[THREADS] = {0}; //save the repetitions to execute each thread
 
-/*Define multiple threads*/
-int threads=5;
-int th=1;
-
-
-//for(th=1 ; th < threads +1; th++)
-  //	{
-    //char sprintf(buffer, "t%d_stack", th)[KERNEL_CONF_STACKSIZE_MAIN];
-  //	}
-
-
-timex_t now_thread;
-int flag[5]={1};
-
-
+/*inizialize parameters*/
+int iteration = 0;
+int test_repeats = 1000;
 
 void *second_thread(void *arg)
 {
-    (void) arg;
+(void) arg;
+/*Define variables control threads*/
+int pid;
 
-    while (1) {
-    	vtimer_now(&now_thread);
-    	flag[1] = 1;
+
+/*define time variables*/
+timex_t now;
+timex_t next = timex_set(0, 0);
+timex_t diff;
+
+/*define sleep variables*/
+timex_t interval = timex_set(0, 1000); // set sleep interval to 1000 us = 1 ms
+
+vtimer_now(&now);
+next = timex_add(now, interval);
+
+while(1){
+
+	pid = thread_getpid();
+	thread[pid]++;
+	//printf("pid thread is: %i\n", pid);
+
+
+	if (pid == THREAD_LATENCY){
+		//printf("thread latency is: %i\n", pid);
+		if(iteration < test_repeats) {
+		vtimer_usleep(interval.microseconds); // sleep
+		vtimer_now(&now); // get actual time after sleep (:=now)
+		diff = timex_sub(now, next); // compute difference between theoretical time after sleep (:=next)
+                                     // and actual time after sleep (:=now)
+		iteration++;
+
+		if (diff.microseconds > MAX_LATENCY - 1) // guard for overflow
+			overflow++;
+		else
+			count[diff.microseconds] += 1; // store diff result for statistics
+			//printf("the latency result is: %"PRIu32" \n", diff.microseconds);
+
+		vtimer_now(&now); // get actual time for next iteration (:=now)
+		next = timex_add(interval, now); // update theoretical time for next iteration
+		}
+	}
+	thread_yield();
+	if(test_repeats == iteration) { //if the test finish send to sleep all threads
 		thread_sleep();
-    }
-
-    return NULL;
+	}
 }
-
-
-
-void *vector_latency(void *arg)
-{
-  (void) arg;
-
-  /*Init latency vector*/
-  int j=0;
-  int c=0;
-
-  for(j=0 ; j < index; j++)
-  	{
-  	latency[j] = c;
-  	c= c + 1;
-  	}
-  printf("vector init\n");
-
-
-    return NULL;
+	return NULL;
 }
 
 int main(void)
 {
 
-	flag[1]=1;
-    /*define time variables*/
-	timex_t now;
-	timex_t next;
-	timex_t next_old;
-	timex_t diff;
-	now_thread.seconds=0;
-	now_thread.microseconds=0;
-	next.seconds=0;
-	next.microseconds=0;
-	next_old.seconds=0;
-	next_old.microseconds=0;
+
+	/*vector variable*/
+	int j = 0;
+	int c = 0;
 
 
-	/*define sleep variables*/
-	vtimer_t vtimer;
-	//timex_t interval=timex_set(1, 0);
-	timex_t interval;
-	interval.seconds=1;
-	interval.microseconds=0;
-
-	/*inizialize parameters*/
-	int i=0;
-	int time=10;
 
 	/*print values*/
-	int n=0;
+	int n = 0;
+	int d = 0;
 
 	/*Maximum and minimum values*/
-	int max_c=count[0];
-	int max_l=latency[0];
-	int min_c=1;
-	int min_l=latency[0];
+	int max_c = count[0];
+	int max_l = latency[0];
+	int max_time_c = count[0];
+	int max_time_l = latency[0];
+	int min_time_c = 0;
+	int min_time_l = 0;
+	int min_time_flag = 1;
 
 
 
+	/*Init program*/
+	printf("# ********************************************* \n");
+	printf("# ************* Latency RIOT test ************* \n");
+	printf("# ********************************************* \n");
+	printf("# config parameters:\n");
+	//printf("# Interval sleep: %"PRIu32" sec and %"PRIu32" micro\n", interval.seconds, interval.microseconds);
+	printf("# Samples: %i\n", MAX_LATENCY);
+	printf("# Repetitions: %i\n", test_repeats);
+	printf("# ********************************************* \n");
 
+	/*Init latency vector*/
+
+	for(j = 0 ; j < MAX_LATENCY; j++) {
+		latency[j] = c;
+		c += 1;
+	}
+	printf("# vector init\n");
+	vtimer_usleep(SEC);
+
+	/*Define multiple threads*/
+	int th=1;
 	/*define multi sleeping thread*/
-	kernel_pid_t pid[threads];
-	const char buffer[9];
+	kernel_pid_t pid[THREADS];
+	char buffer[THREADS][11];
 
-for(th=1 ; th < threads +1; th++)
-	  	{
-	    sprintf(buffer, "thread_%d", th);
-	    printf("buffer is:%s\n", buffer);
-		printf("threads:%i\n", th);
-      pid[th] = thread_create(stack[th],
-    		                    KERNEL_CONF_STACKSIZE_MAIN,
-                                PRIORITY_MAIN - th,
-                                CREATE_WOUT_YIELD | CREATE_STACKTEST | CREATE_SLEEPING,
-                                second_thread,
-                                NULL,
-                               buffer);
-        printf("pid thread is:%i\n", pid[th]);
-	  	}
+for(th=1 ; th < THREADS; th++)
+	{
+	sprintf(buffer[th], "th_back_%d", th);
+//	printf("buffer is:%s\n", buffer[th]);
+	pid[th] = thread_create(stack[th],
+			KERNEL_CONF_STACKSIZE_MAIN,
+			PRIORITY_MAIN -1,
+			CREATE_WOUT_YIELD | CREATE_STACKTEST,
+			second_thread,
+			NULL,
+			buffer[th]);
+	}
+thread_yield();
 
-    printf("threads init\n");
+	while(1) {
+		if(test_repeats == iteration) {
+			thread_yield(); //force to execute the rest of threads in order to send all threads in sleep before print results
+			test_repeats = 0;
+			printf("# Test finish\n");
+			printf("# print histogram\n");
+			vtimer_usleep(SEC);
 
-	/*define latency vector thread*/
-     thread_create(latency_vector_stack,
-                   KERNEL_CONF_STACKSIZE_MAIN,
-                   PRIORITY_MAIN - 2,
-                   CREATE_WOUT_YIELD | CREATE_STACKTEST,
-                   vector_latency,
-                   NULL,
-                   "vector_latency");
+			/*print out values*/
+			for(n = 0; n < MAX_LATENCY ; n++) {
+				if(n < 10)
+					printf("00%i %i\n", latency[n], count[n]);
+				else if(n<100 && n>=10)
+					printf("0%i %i\n", latency[n], count[n]);
+				else
+					printf("%i %i\n", latency[n], count[n]);
 
-
-
-    /*Init program*/
-    printf("********************************************* \n");
-    printf("************* Latency RIOT test ************* \n");
-    printf("********************************************* \n");
-    printf("config parameters:\n\n");
-    printf("Interval sleep: %i sec\n", interval.seconds);
-    printf("Samples:%i\n", index);
-    printf("time process: %i\n", time);
-    printf("********************************************** \n");
-    printf("\n \n");
-    thread_print_all();
-    vtimer_usleep(SEC);
-
-
-while(1){
-
-	if(flag[1] && (i<time))
-		{
-
-		/*get time now and program next thread wake up*/
-		vtimer_now(&now);
-		vtimer_set_wakeup(&vtimer, interval, pid[1]);
-		next_old.microseconds = next.microseconds;
-		next.microseconds = now.microseconds + interval.microseconds;
-		flag[1]=0;
-		i = i +1;
-
-		/*Capture and print out  latency values*/
-			//diff.seconds = now_thread.seconds - next.seconds; //always is 0
-			diff.microseconds = now_thread.microseconds - next_old.microseconds;
-			if (diff.microseconds > 99999)
-			diff.microseconds =  0x100000000 - diff.microseconds;
-
-			count[diff.microseconds] += 1 ;
-
-
-
-			//x+=1;
-			//printf("%i\n", x);
-	//		printf("next is microsec: %"PRIu32"\n", next.microseconds);
-		   // printf("now_thread is microsec: %"PRIu32"\n", now_thread.microseconds);
-			//printf("diff is microsec: %"PRIu32"\n", diff.microseconds);
-
-
-		}
-
-	if(time == i)
-		{
-	    //thread_print_all();
-		time=0;
-		printf("Test finish\n");
-		printf("print histogram\n");
-		vtimer_usleep(SEC);
-		/*print out values*/
-		for(n=0; n < index ; n++)
-			{
-			if(n<10)
-			printf("00%i %"PRIu32"\n",latency[n], count[n]);
-			else if(n<100 && n>=10)
-			printf("0%i %"PRIu32"\n",latency[n], count[n]);
-			else
-			printf("%i %"PRIu32"\n",latency[n], count[n]);
-
-			/*Get the maximum values*/
-			if (max_c < count[n])
-				{
-				max_c = count[n];
-				max_l = latency[n];
-
+				/*Get the maximum repetitions*/
+				if (max_c < count[n]) {
+					max_c = count[n];
+					max_l = latency[n];
 				}
 
-			/*Get the minimum values*/
-			if (min_c > count[n])
-				{
-				min_c = count[n];
-				min_l = latency[n];
-
+				/*Get time values*/
+				if (count[n] >= 1){
+					/*Get maximum time value*/
+					if(max_time_l < latency[n]) {
+						max_time_l = latency[n];
+						max_time_c = count[n];
+					}
+					/*Get minimum time value*/
+					if(min_time_flag){
+						min_time_flag = 0;
+						min_time_l = latency[n];
+						min_time_c = count[n];
+					}
 				}
 			}
+			printf("# MIN time is: %i microseconds in %i repetitions\n", min_time_l, min_time_c);
+			printf("# MAX time is: %i microseconds in %i repetitions\n", max_time_l, max_time_c);
+			printf("# overflow is: %i\n", overflow);
+			printf("# MAX repetitions are: %i repetitions in %i microseconds\n", max_c, max_l);
 
-		printf("MIN: %i microsec in %i times  ;  MAX: %i microsec in %i times \n", min_l, min_c, max_l, max_c);
+
+			printf("\n\n");
+			thread_print_all();
+
+			for (d=3; d < THREADS +2; d++){
+				printf("#Thread pid %d is executed: %i times\n", d, thread[d]);
+			}
+			LED_GREEN_OFF; //indicate test finish
 		}
-
+	thread_yield();
 	}
 
-    return 0;
+	return 0;
 }
+
