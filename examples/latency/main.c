@@ -26,10 +26,12 @@
 #include "thread.h"
 #include "msg.h"
 
-#define MULTI_THREAD    (0)
+#define MULTI_THREAD	(0)
+#define THREADS			(5)
+#define TH_TEST			(2)
 
 #if MULTI_THREAD
-char stack[20][KERNEL_CONF_STACKSIZE_MAIN];
+char stack[THREADS][KERNEL_CONF_STACKSIZE_MAIN];
 #endif
 
 #define MSEC (1000)
@@ -39,14 +41,30 @@ char stack[20][KERNEL_CONF_STACKSIZE_MAIN];
 int latency[MAX_LATENCY] = {0}; /* define vector for latency */
 int count[MAX_LATENCY] = {0};
 
+/*Global variables*/
+
+
 #if MULTI_THREAD
 void *second_thread(void *arg)
 {
-	(void) arg;
+(void) arg;
 
-	while (1) {
+while (1) {
+	if(TH_TEST > THREADS)
+		printf("error: thread test latency is bigger of number of threads");
 
-	}
+	//define thread variables
+	int pid;
+	//printf("I am in thread");
+
+	pid = thread_getpid(); //get pid for the running thread
+//	if (pid == TH_TEST){
+		//calculate the test latency for the specific thread
+	//}
+
+
+
+}
 
 	return NULL;
 }
@@ -72,7 +90,8 @@ int main(void)
 
 	/*inizialize parameters*/
 	int iteration = 0;
-	int test_repeats = 10000;
+	int test_repeats = 1000;
+
 
 	/*print values*/
 	int n = 0;
@@ -89,13 +108,12 @@ int main(void)
 
 #if MULTI_THREAD
 	/*Define multiple threads*/
-	int threads=6;
 	int th=1;
 	/*define multi sleeping thread*/
-	kernel_pid_t pid[threads];
-	const char buffer[threads][10];
+	kernel_pid_t pid[THREADS];
+	const char buffer[THREADS][10];
 
-for(th=1 ; th < threads +1; th++)
+for(th=1 ; th < THREADS +1; th++)
 	{
 	sprintf(buffer[th], "th_back_%d", th);
 	//printf("buffer is:%s\n", buffer[th]);
@@ -138,6 +156,9 @@ for(th=1 ; th < threads +1; th++)
 	while(1) {
 		if(iteration < test_repeats) {
 			vtimer_usleep(interval.microseconds); // sleep
+			//vtimer_set_msg(interval.microseconds);
+			//for i = 1:100 i++
+			//message_receive(...);
 			vtimer_now(&now); // get actual time after sleep (:=now)
 			diff = timex_sub(now, next); // compute difference between theoretical time after sleep (:=next)
                                          // and actual time after sleep (:=now)
@@ -198,11 +219,6 @@ for(th=1 ; th < threads +1; th++)
 			printf("# MAX time is: %i microseconds in %i repetitions\n", max_time_l, max_time_c);
 			printf("# overflow is: %i\n", overflow);
 			printf("# MAX repetitions are: %i repetitions in %i microseconds\n", max_c, max_l);
-
-
-				//printf("# MIN: %i microsec in %i repetitions\n", min_l[print_min], min_c[print_min]);
-
-
 
 #if MULTI_THREAD
 			printf("\n\n");

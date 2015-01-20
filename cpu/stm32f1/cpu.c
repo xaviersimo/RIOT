@@ -25,6 +25,8 @@
 #include "cpu.h"
 #include "periph_conf.h"
 
+
+
 static void clk_init(void);
 
 void cpu_init(void)
@@ -57,6 +59,7 @@ static void clk_init(void)
     /* Disable all interrupts and clear pending bits  */
     RCC->CIR = (uint32_t)0x009F0000;
 
+
     /* SYSCLK, HCLK, PCLK2 and PCLK1 configuration */
 
 #if CLOCK_HSE
@@ -65,10 +68,14 @@ static void clk_init(void)
     /* Wait till HSE is ready,
      * NOTE: the MCU will stay here forever if no HSE clock is connected */
     while ((RCC->CR & RCC_CR_HSERDY) == 0);
-#else /* CLOCK_HSE */
+#else /* CLOCK_HSI */
     RCC->CR |= ((uint32_t)RCC_CR_HSION);
     while ((RCC->CR & RCC_CR_HSIRDY) == 0);
-#endif /* CLOCK_HSE */
+
+
+#endif /* CLOCK_HSI */
+
+
 
 #if !defined(FLASH_PREFETCH_BUFFER) || FLASH_PREFETCH_BUFFER
     /* Enable Prefetch Buffer */
@@ -86,19 +93,30 @@ static void clk_init(void)
     /* PCLK1 = HCLK */
     RCC->CFGR |= (uint32_t)CLOCK_APB1_DIV;
 
-#if CLOCK_HSE
+    /*Select HSI clock*/
+
+    //RCC->CFGR |= (uint32_t)RCC_CFGR_MCO_HSI;
+     RCC->AHBENR |= RCC_AHBENR_DMA1EN;
+
+//#if CLOCK_HSE
     /*  PLL configuration: PLLCLK = HSE / HSE_DIV * HSE_MUL */
-    RCC->CFGR &= ~((uint32_t)(RCC_CFGR_PLLSRC | RCC_CFGR_PLLXTPRE | RCC_CFGR_PLLMULL));
-    RCC->CFGR |= (uint32_t)(RCC_CFGR_PLLSRC_HSE | CLOCK_PLL_HSE_DIV | CLOCK_PLL_HSE_MUL);
+    //RCC->CFGR &= ~((uint32_t)(RCC_CFGR_PLLSRC | RCC_CFGR_PLLXTPRE | RCC_CFGR_PLLMULL));
+    //RCC->CFGR |= (uint32_t)(RCC_CFGR_PLLSRC_HSE | CLOCK_PLL_HSE_DIV | CLOCK_PLL_HSE_MUL);
+
+
+    /*Pll configuration for HSI*/
+ //   RCC->CFGR &= ~((uint32_t)(RCC_CFGR_PLLSRC | RCC_CFGR_PLLMULL));
+   // RCC->CFGR |= (uint32_t)(RCC_CFGR_PLLSRC_HSI_Div2 | RCC_CFGR_PLLMULL9);
     /* Enable PLL */
-    RCC->CR |= RCC_CR_PLLON;
+    //RCC->CR |= RCC_CR_PLLON;
     /* Wait till PLL is ready */
-    while ((RCC->CR & RCC_CR_PLLRDY) == 0);
+    //while ((RCC->CR & RCC_CR_PLLRDY) == 0);
 
     /* Select PLL as system clock source */
-    RCC->CFGR &= ~((uint32_t)(RCC_CFGR_SW));
-    RCC->CFGR |= (uint32_t)RCC_CFGR_SW_PLL;
+ //   RCC->CFGR &= ~((uint32_t)(RCC_CFGR_SW));
+ //   RCC->CFGR |= (uint32_t)RCC_CFGR_SW_PLL;
     /* Wait till PLL is used as system clock source */
-    while ((RCC->CFGR & (uint32_t)RCC_CFGR_SWS) != RCC_CFGR_SWS_PLL);
-#endif /* CLOCK_HSE */
+ //   while ((RCC->CFGR & (uint32_t)RCC_CFGR_SWS) != RCC_CFGR_SWS_PLL);
+//#endif /* CLOCK_HSE */
+
 }

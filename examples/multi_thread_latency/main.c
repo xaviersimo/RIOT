@@ -45,7 +45,6 @@ int overflow = 0;
 int thread[THREADS] = {0}; //save the repetitions to execute each thread
 
 /*inizialize parameters*/
-int iteration = 0;
 int test_repeats = 1000;
 
 void *second_thread(void *arg)
@@ -54,6 +53,7 @@ void *second_thread(void *arg)
 /*Define variables control threads*/
 int pid;
 
+int iteration = 0;
 
 /*define time variables*/
 timex_t now;
@@ -72,31 +72,36 @@ while(1){
 	thread[pid]++;
 	//printf("pid thread is: %i\n", pid);
 
+	iteration++;
 
 	if (pid == THREAD_LATENCY){
 		//printf("thread latency is: %i\n", pid);
 		if(iteration < test_repeats) {
-		vtimer_usleep(interval.microseconds); // sleep
-		vtimer_now(&now); // get actual time after sleep (:=now)
-		diff = timex_sub(now, next); // compute difference between theoretical time after sleep (:=next)
+			vtimer_usleep(interval.microseconds); // sleep
+			vtimer_now(&now); // get actual time after sleep (:=now)
+			diff = timex_sub(now, next); // compute difference between theoretical time after sleep (:=next)
                                      // and actual time after sleep (:=now)
-		iteration++;
 
-		if (diff.microseconds > MAX_LATENCY - 1) // guard for overflow
-			overflow++;
-		else
-			count[diff.microseconds] += 1; // store diff result for statistics
-			//printf("the latency result is: %"PRIu32" \n", diff.microseconds);
 
-		vtimer_now(&now); // get actual time for next iteration (:=now)
-		next = timex_add(interval, now); // update theoretical time for next iteration
+			if (diff.microseconds > MAX_LATENCY - 1) // guard for overflow
+				overflow++;
+			else
+				count[diff.microseconds] += 1; // store diff result for statistics
+				//printf("the latency result is: %"PRIu32" \n", diff.microseconds);
+
+			vtimer_now(&now); // get actual time for next iteration (:=now)
+			next = timex_add(interval, now); // update theoretical time for next iteration
+		} else {
+			send_message(...); //send message to main
+			break;
 		}
+
+	} else {
+		thread_yield();
 	}
-	thread_yield();
-	if(test_repeats == iteration) { //if the test finish send to sleep all threads
-		thread_sleep();
-	}
+	//thread_yield();
 }
+
 	return NULL;
 }
 
@@ -133,6 +138,7 @@ int main(void)
 	//printf("# Interval sleep: %"PRIu32" sec and %"PRIu32" micro\n", interval.seconds, interval.microseconds);
 	printf("# Samples: %i\n", MAX_LATENCY);
 	printf("# Repetitions: %i\n", test_repeats);
+	printf("#numeber threads: %i (with same priority)\n", THREADS);
 	printf("# ********************************************* \n");
 
 	/*Init latency vector*/
@@ -162,11 +168,12 @@ int main(void)
 			NULL,
 			buffer[th]);
 	}
-	thread_yield();
+	//thread_yield();
 
-	while(1) {
-		if(test_repeats == iteration) {
-			thread_yield(); //force to execute the rest of threads in order to send all threads in sleep before print results
+	receive_message(....);
+	//while(1) {
+	//	if(test_repeats == iteration) {
+	//		thread_yield(); //force to execute the rest of threads in order to send all threads in sleep before print results
 			test_repeats = 0;
 			printf("# Test finish\n");
 			printf("# print histogram\n");
@@ -215,9 +222,9 @@ int main(void)
 				printf("#Thread pid %d is executed: %i times\n", d, thread[d]);
 			}
 			LED_GREEN_OFF; //indicate test finish
-		}
-	thread_yield();
-	}
+	//	}
+	//thread_yield();
+	//}
 
 	return 0;
 }

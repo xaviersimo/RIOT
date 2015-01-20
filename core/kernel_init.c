@@ -81,7 +81,7 @@ static char idle_stack[KERNEL_CONF_STACKSIZE_IDLE];
 void kernel_init(void)
 {
     dINT();
-    printf("kernel_init(): This is RIOT! (Version: %s)\n", RIOT_VERSION);
+    printf("#kernel_init(): This is RIOT! (Version: %s)\n", RIOT_VERSION);
 
     hwtimer_init();
 
@@ -93,7 +93,7 @@ void kernel_init(void)
         printf("kernel_init(): error creating main task.\n");
     }
 
-    printf("kernel_init(): jumping into first task...\n");
+    printf("#kernel_init(): jumping into first task...\n");
 
     cpu_switch_context_exit();
 }

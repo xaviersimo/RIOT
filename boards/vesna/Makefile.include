@@ -47,6 +47,7 @@ export LINKFLAGS += -specs=nano.specs -lc -lnosys
 endif
 
 # export board specific includes to the global includes-listing
-export INCLUDES += -I$(RIOTBOARD)/$(BOARD)/include/ -I$(RIOTBASE)/drivers/at86rf231/include -I$(RIOTBASE)/sys/net/include -I$(RIOTBASE)/drivers/include/periph
+export INCLUDES += -I$(RIOTBASE)/drivers/include/periph -I$(RIOTBASE)/drivers/include/cc110x_legacy -I$(RIOTBOARD)/$(BOARD)/include/ -I$(RIOTBASE)/drivers/at86rf231/include -I$(RIOTBASE)/sys/net/include -I$(RIOTBASE)/sys/include  
+
 
 include $(RIOTBOARD)/$(BOARD)/Makefile.dep
