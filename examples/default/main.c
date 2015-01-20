@@ -31,6 +31,10 @@
 #include "shell_commands.h"
 #include "board_uart0.h"
 
+#include "transceiver.h"
+#include "at86rf231.h"
+
+
 #ifdef MODULE_LTC4150
 #include "ltc4150.h"
 #endif
@@ -95,7 +99,7 @@ void *radio(void *arg)
             printf("\tRSSI:\t%u\n", p->rssi);
 
             for (i = 0; i < p->length; i++) {
-                printf("%02X ", p->data[i]);
+                puts("%02X ", p->data[i]);
             }
 
             p->processing--;
@@ -153,7 +157,10 @@ int main(void)
 #endif
 
 #ifdef MODULE_TRANSCEIVER
-    init_transceiver();
+    //init_transceiver();
+    kernel_pid_t pid=KERNEL_PID_UNDEF;
+    at86rf231_init(pid);
+
 #endif
 
     (void) puts("Welcome to RIOT!");

@@ -25,26 +25,39 @@
 #include "periph/spi.h"
 #include "periph/gpio.h"
 
+#define ENABLE_DEBUG (1)
+#include "debug.h"
+
+
 void at86rf231_reg_write(uint8_t addr, uint8_t value)
 {
     /* Start the SPI transfer */
     gpio_clear(AT86RF231_CS);
     /* write to register */
-    spi_transfer_reg(AT86RF231_SPI, AT86RF231_ACCESS_REG | AT86RF231_ACCESS_WRITE | addr, value, 0);
+    int transfered = spi_transfer_reg(AT86RF231_SPI, AT86RF231_ACCESS_REG | AT86RF231_ACCESS_WRITE | addr, value, 0);
+
+    //DEBUG("WRITE ha retornat transfered: %d\n", transfered);
     /* End the SPI transfer */
     gpio_set(AT86RF231_CS);
 }
 
 uint8_t at86rf231_reg_read(uint8_t addr)
 {
-    char value;
 
+    char value;
     /* Start the SPI transfer */
     gpio_clear(AT86RF231_CS);
+
     /* read from register */
-    spi_transfer_reg(AT86RF231_SPI, AT86RF231_ACCESS_REG | AT86RF231_ACCESS_READ | addr, 0, &value);
+    int ret = spi_transfer_reg(AT86RF231_SPI, AT86RF231_ACCESS_REG | AT86RF231_ACCESS_READ | addr, 0, &value);
+
+
+    DEBUG("READ ha retornat: %d\n", ret);
     /* End the SPI transfer */
     gpio_set(AT86RF231_CS);
+   // DEBUG("at86rf231 : ERROR: value is: %i\n", value);
+
+   // DEBUG("ERROR_2 value= %i \n", value);
     return (uint8_t)value;
 }
 

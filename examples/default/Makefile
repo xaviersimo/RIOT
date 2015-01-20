@@ -2,7 +2,7 @@
 APPLICATION = default
 
 # If no BOARD is found in the environment, use this default:
-BOARD ?= native
+BOARD ?= vesna
 
 # This has to be the absolute path to the RIOT base directory:
 RIOTBASE ?= $(CURDIR)/../..
@@ -34,7 +34,9 @@ USEMODULE += shell
 USEMODULE += shell_commands
 USEMODULE += ps
 USEMODULE += vtimer
-USEMODULE += defaulttransceiver
+#USEMODULE += defaulttransceiver
+USEMODULE += transceiver
+USEMODULE += at86rf231
 
 FEATURES_OPTIONAL += transceiver
 

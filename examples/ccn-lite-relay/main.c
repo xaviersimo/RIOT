@@ -27,6 +27,7 @@
 // riot
 #include "thread.h"
 #include "rtc.h"
+//#include <ps.h>
 
 // ccn
 #include "ccn_lite/ccnl-riot.h"
@@ -80,6 +81,8 @@ int main(void)
 
     printf("starting ccn-lite relay...\n");
     ccnl_riot_relay_start(NULL);
+	 //thread_print_all();
+
 
     return 0;
 }

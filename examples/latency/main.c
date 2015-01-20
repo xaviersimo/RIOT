@@ -26,11 +26,9 @@
 #include "thread.h"
 #include "msg.h"
 
-#define MULTI_THREAD    (0)
 
-#if MULTI_THREAD
-char stack[20][KERNEL_CONF_STACKSIZE_MAIN];
-#endif
+#define VITMER_MSG      (1) //Select test latency
+
 
 #define MSEC (1000)
 #define SEC (1000 * MSEC)
@@ -39,22 +37,9 @@ char stack[20][KERNEL_CONF_STACKSIZE_MAIN];
 int latency[MAX_LATENCY] = {0}; /* define vector for latency */
 int count[MAX_LATENCY] = {0};
 
-#if MULTI_THREAD
-void *second_thread(void *arg)
-{
-	(void) arg;
-
-	while (1) {
-
-	}
-
-	return NULL;
-}
-#endif
 
 int main(void)
 {
-
 
 	/*vector variable*/
 	int overflow = 0;
@@ -66,13 +51,20 @@ int main(void)
 	timex_t next = timex_set(0, 0);
 	timex_t diff;
 
-
 	/*define sleep variables*/
-	timex_t interval = timex_set(0, 1000); // set sleep interval to 1000 us = 1 ms
+	timex_t interval = timex_set(0,1000); // set sleep interval to 1000 us = 1 ms
 
-	/*inizialize parameters*/
+	/*repetitions parameters*/
 	int iteration = 0;
-	int test_repeats = 10000;
+	int test_repeats = 1000;
+
+#if	VITMER_MSG
+	char *msg;
+	msg = "Hello world!"; //message to send
+	msg_t m;
+	int temp = 0;
+	vtimer_t timer;
+#endif
 
 	/*print values*/
 	int n = 0;
@@ -87,30 +79,6 @@ int main(void)
 	int min_time_flag = 1;
 
 
-#if MULTI_THREAD
-	/*Define multiple threads*/
-	int threads=6;
-	int th=1;
-	/*define multi sleeping thread*/
-	kernel_pid_t pid[threads];
-	const char buffer[threads][10];
-
-for(th=1 ; th < threads +1; th++)
-	{
-	sprintf(buffer[th], "th_back_%d", th);
-	//printf("buffer is:%s\n", buffer[th]);
-	pid[th] = thread_create(stack[th],
-			KERNEL_CONF_STACKSIZE_MAIN,
-			PRIORITY_MAIN - th,
-			CREATE_WOUT_YIELD | CREATE_STACKTEST | CREATE_SLEEPING,
-			second_thread,
-			NULL,
-			buffer[th]);
-	}
-
-#endif
-
-
 	/*Init program*/
 	printf("# ********************************************* \n");
 	printf("# ************* Latency RIOT test ************* \n");
@@ -122,26 +90,30 @@ for(th=1 ; th < threads +1; th++)
 	printf("# ********************************************* \n");
 
 	/*Init latency vector*/
-
 	for(j = 0 ; j < MAX_LATENCY; j++) {
 		latency[j] = c;
 		c += 1;
 	}
-
 	printf("# vector init\n");
-
 	vtimer_usleep(SEC);
 
-
+	/*Start latency test*/
 	vtimer_now(&now);
 	next = timex_add(now, interval);
 	while(1) {
 		if(iteration < test_repeats) {
+
+#if VITMER_MSG
+			vtimer_set_msg(&timer, interval, thread_getpid(), msg );
+			for (temp=0; temp < 100 ;temp++){}
+			msg_receive(&m);
+#else
 			vtimer_usleep(interval.microseconds); // sleep
+#endif
+
 			vtimer_now(&now); // get actual time after sleep (:=now)
 			diff = timex_sub(now, next); // compute difference between theoretical time after sleep (:=next)
                                          // and actual time after sleep (:=now)
-
 			iteration++;
 
 			if (diff.microseconds > MAX_LATENCY - 1) // guard for overflow
@@ -198,15 +170,8 @@ for(th=1 ; th < threads +1; th++)
 			printf("# MAX time is: %i microseconds in %i repetitions\n", max_time_l, max_time_c);
 			printf("# overflow is: %i\n", overflow);
 			printf("# MAX repetitions are: %i repetitions in %i microseconds\n", max_c, max_l);
-
-
-				//printf("# MIN: %i microsec in %i repetitions\n", min_l[print_min], min_c[print_min]);
-
-
-
-#if MULTI_THREAD
-			printf("\n\n");
-			thread_print_all();
+#if VITMER_MSG
+			printf("#The received message is: %s\n", m.content.ptr);
 #endif
 			LED_GREEN_OFF; //indicate test finish
 		}

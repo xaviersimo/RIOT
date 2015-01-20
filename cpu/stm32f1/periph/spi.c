@@ -25,17 +25,18 @@
 #include "periph_conf.h"
 #include "board.h"
 
-#define ENABLE_DEBUG (0)
+#define ENABLE_DEBUG (1)
 #include "debug.h"
 
 /* guard file in case no SPI device is defined */
 #if SPI_0_EN
 
 int spi_init_master(spi_t dev, spi_conf_t conf, spi_speed_t speed)
-{
-    SPI_TypeDef *spi;
+{   SPI_TypeDef *spi;
     uint16_t br_div;
     uint8_t bus_div;
+
+
 
     switch(dev) {
 #ifdef SPI_0_EN
@@ -43,6 +44,7 @@ int spi_init_master(spi_t dev, spi_conf_t conf, spi_speed_t speed)
             spi = SPI_0_DEV;
             bus_div = SPI_0_BUS_DIV;
             SPI_0_CLKEN();
+
             break;
 #endif
         default:
@@ -52,15 +54,19 @@ int spi_init_master(spi_t dev, spi_conf_t conf, spi_speed_t speed)
     /* configure SCK, MISO and MOSI pin */
     spi_conf_pins(dev);
 
+
     /* configure SPI bus speed */
     switch(speed) {
         case SPI_SPEED_10MHZ:
-            br_div = 0x01 + bus_div;      /* actual speed: 9MHz   */
+        	DEBUG("speed is 10MHz\n");
+           br_div = 0x01 + bus_div;      /* actual speed: 9MHz   */
             break;
         case SPI_SPEED_5MHZ:
+        	DEBUG("speed is 5MHz\n");
             br_div = 0x02 + bus_div;     /* actual speed: 4.5MHz */
             break;
         case SPI_SPEED_1MHZ:
+        	DEBUG("speed is 1MHz\n");
             br_div = 0x04 + bus_div;     /* actual speed: 1.1MHz */
             break;
         case SPI_SPEED_400KHZ:
@@ -73,12 +79,19 @@ int spi_init_master(spi_t dev, spi_conf_t conf, spi_speed_t speed)
             return -2;
     }
 
+    DEBUG("la config es:%i\n", conf);
+    //Disable SPi while it is been configured
+
     /* set up SPI */
-    spi->CR1 = SPI_CR1_SSM | SPI_CR1_SSI | SPI_CR1_MSTR | (conf & 0x3) | (br_div << 3);
+    spi->CR1 = SPI_CR1_SSM | SPI_CR1_SSI | SPI_CR1_MSTR |(conf & 0x3) | (br_div << 3);
+   // spi->CR1 =  SPI_CR1_MSTR |(conf & 0x3) | (br_div << 3);
+    DEBUG("el cr1 val: %x\n", spi->CR1);
+
     spi->I2SCFGR &= 0xF7FF;     /* select SPI mode */
     spi->CRCPR = 0x7;           /* reset CRC polynomial */
     /* enable the SPI device */
     spi->CR1 |= SPI_CR1_SPE;
+    DEBUG("Comprovació SPI es activat: %x\n", spi->CR1);
 
     return 0;
 }
@@ -139,11 +152,11 @@ int spi_transfer_byte(spi_t dev, char out, char *in)
         default:
             return -1;
     }
-
+    DEBUG("el sr es %x\n", spi->SR);
     while ((spi->SR & SPI_SR_TXE) == RESET);
-    spi->DR = out;
     transferred++;
-
+    spi->DR = out;
+    DEBUG("el sr despres transmision es %x\n", spi->SR);
     while ((spi->SR & SPI_SR_RXNE) == RESET);
     if (in != NULL) {
         *in = spi->DR;
@@ -154,15 +167,18 @@ int spi_transfer_byte(spi_t dev, char out, char *in)
     }
 
     /* SPI busy */
+    int count=0;
     while ((spi->SR & 0x80));
-#if ENABLE_DEBUG
+    {
+    	DEBUG("el spi esta busy count:%i\n", count);
+    	count++;
+    }
     if (in != NULL) {
-        DEBUG("\nout: %x in: %x transferred: %x\n", out, *in, transferred);
+        DEBUG("\n out: %x in: %x transferred: %x\n", out, *in, transferred);
     }
     else {
-        DEBUG("\nout: %x in: was nullPointer transferred: %x\n", out, transferred);
+        DEBUG("\n out: %x in: was nullPointer transferred: %x\n", out, transferred);
     }
-#endif /*ENABLE_DEBUG */
 
     return transferred;
 }

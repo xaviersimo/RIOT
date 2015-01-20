@@ -18,7 +18,7 @@
  *
  * @}
  */
-
+#include <stdio.h>
 #include "at86rf231.h"
 #include "at86rf231_spi.h"
 #include "board.h"
@@ -28,7 +28,7 @@
 #include "transceiver.h"
 #include "hwtimer.h"
 
-#define ENABLE_DEBUG (0)
+#define ENABLE_DEBUG (1)
 #include "debug.h"
 
 #define _MAX_RETRIES    (100)
@@ -57,13 +57,31 @@ void at86rf231_init(kernel_pid_t tpid)
 }
 #endif
 
+
+
 int at86rf231_initialize(netdev_t *dev)
 {
     at86rf231_gpio_spi_interrupts_init();
 
-    at86rf231_reset();
+     at86rf231_reset();
 
-    at86rf231_on();
+
+    /*read version number*/
+   // DEBUG("llegint part number:");
+   //at86rf231_reg_read(AT86RF231_REG__PART_NUM);
+
+    //DEBUG("llegint version number:");
+     gpio_irq_disable(AT86RF231_INT);
+    at86rf231_reg_read(AT86RF231_REG__VERSION_NUM);
+    gpio_irq_enable(AT86RF231_INT);
+
+    at86rf231_reg_read(AT86RF231_REG__PART_NUM);
+    // at86rf231_on();
+
+
+
+    //at86rf231_reg_write(AT86RF231_REG__TRX_STATE, AT86RF231_TRX_STATE__FORCE_TRX_OFF);
+
 
     /* TODO :
      * and configure security, power
@@ -71,36 +89,41 @@ int at86rf231_initialize(netdev_t *dev)
 #ifdef MODULE_CONFIG
     at86rf231_set_pan(sysconfig.radio_pan_id);
 #else
-    at86rf231_set_pan(0x0001);
+   // at86rf231_set_pan(0x0001);
 #endif
 
-    radio_channel = at86rf231_reg_read(AT86RF231_REG__PHY_CC_CCA) & AT86RF231_PHY_CC_CCA_MASK__CHANNEL;
+    //radio_channel = at86rf231_reg_read(AT86RF231_REG__PHY_CC_CCA) & AT86RF231_PHY_CC_CCA_MASK__CHANNEL;
 
-    radio_address = 0x00FF & (uint16_t)at86rf231_reg_read(AT86RF231_REG__SHORT_ADDR_0);
-    radio_address |= at86rf231_reg_read(AT86RF231_REG__SHORT_ADDR_1) << 8;
+    //radio_address = 0x00FF & (uint16_t)at86rf231_reg_read(AT86RF231_REG__SHORT_ADDR_0);
+    //radio_address |= at86rf231_reg_read(AT86RF231_REG__SHORT_ADDR_1) << 8;
 
-    radio_address_long = 0x00000000000000FF & (uint64_t)at86rf231_reg_read(AT86RF231_REG__IEEE_ADDR_0);
-    radio_address_long |= ((uint64_t)at86rf231_reg_read(AT86RF231_REG__IEEE_ADDR_1)) << 8;
-    radio_address_long |= ((uint64_t)at86rf231_reg_read(AT86RF231_REG__IEEE_ADDR_1)) << 16;
-    radio_address_long |= ((uint64_t)at86rf231_reg_read(AT86RF231_REG__IEEE_ADDR_1)) << 24;
-    radio_address_long |= ((uint64_t)at86rf231_reg_read(AT86RF231_REG__IEEE_ADDR_1)) << 32;
-    radio_address_long |= ((uint64_t)at86rf231_reg_read(AT86RF231_REG__IEEE_ADDR_1)) << 40;
-    radio_address_long |= ((uint64_t)at86rf231_reg_read(AT86RF231_REG__IEEE_ADDR_1)) << 48;
-    radio_address_long |= ((uint64_t)at86rf231_reg_read(AT86RF231_REG__IEEE_ADDR_1)) << 56;
+    //radio_address_long = 0x00000000000000FF & (uint64_t)at86rf231_reg_read(AT86RF231_REG__IEEE_ADDR_0);
+    //radio_address_long |= ((uint64_t)at86rf231_reg_read(AT86RF231_REG__IEEE_ADDR_1)) << 8;
+    //radio_address_long |= ((uint64_t)at86rf231_reg_read(AT86RF231_REG__IEEE_ADDR_1)) << 16;
+    //radio_address_long |= ((uint64_t)at86rf231_reg_read(AT86RF231_REG__IEEE_ADDR_1)) << 24;
+    //radio_address_long |= ((uint64_t)at86rf231_reg_read(AT86RF231_REG__IEEE_ADDR_1)) << 32;
+    //radio_address_long |= ((uint64_t)at86rf231_reg_read(AT86RF231_REG__IEEE_ADDR_1)) << 40;
+    //radio_address_long |= ((uint64_t)at86rf231_reg_read(AT86RF231_REG__IEEE_ADDR_1)) << 48;
+   // radio_address_long |= ((uint64_t)at86rf231_reg_read(AT86RF231_REG__IEEE_ADDR_1)) << 56;
 
     return 0;
 }
 
 int at86rf231_on(void)
 {
+
     /* Send a FORCE TRX OFF command */
     at86rf231_reg_write(AT86RF231_REG__TRX_STATE, AT86RF231_TRX_STATE__FORCE_TRX_OFF);
 
+	//at86rf231_reg_write(AT86RF231_REG__TRX_STATE, AT86RF231_TRX_STATE__TRX_OFF);
+
     /* busy wait for TRX_OFF state */
+    int delay = _MAX_RETRIES;
     do {
-        int delay = _MAX_RETRIES;
+        DEBUG("at86rf231 : intentant %d\n", delay);
         if (!--delay) {
-            DEBUG("at86rf231 : ERROR : could not enter TRX_OFF mode\n");
+        	DEBUG("at86rf231 : ERROR : could not enter TRX_OFF mode\n");
+
             return 0;
         }
     } while (at86rf231_get_status() != AT86RF231_TRX_STATUS__TRX_OFF);
@@ -110,11 +133,14 @@ int at86rf231_on(void)
     /* change into basic reception mode to initialise CSMA seed by RNG */
     do {
         int delay = _MAX_RETRIES;
+        DEBUG("at86rf231 : intentant %d\n", delay);
         if (!--delay) {
             DEBUG("at86rf231 : ERROR : could not enter RX_ON mode\n");
             return 0;
         }
+
     } while (at86rf231_get_status() != AT86RF231_TRX_STATUS__RX_ON);
+
 
     /* read RNG values into CSMA_SEED_0 */
     for (int i=0; i<7; i+=2) {
@@ -339,32 +365,64 @@ int at86rf231_get_monitor(void)
 
 void at86rf231_gpio_spi_interrupts_init(void)
 {
-    /* SPI init */
-    spi_init_master(AT86RF231_SPI, SPI_CONF_FIRST_RISING, SPI_SPEED_5MHZ);
+
+
+	 int i=0;
+
+	/*Detect right pink clk*/
+	//gpio_init_out(AT86RF231_clk, GPIO_NOPULL);
+    //gpio_set(AT86RF231_clk);
+	// for(i=0; i < (100 * CLOCK_CORECLOCK) / 1000; i++);
+	//gpio_clear(AT86RF231_clk);
+
+	/* SPI init */
+     spi_init_master(AT86RF231_SPI, SPI_CONF_FIRST_RISING, SPI_SPEED_10MHZ);
+
+  //   gpio_set(AT86RF231_clk);
+ //	for(i=0; i < (100 * CLOCK_CORECLOCK) / 1000; i++);
+ //	gpio_clear(AT86RF231_clk);
+
     /* IRQ0 */
     gpio_init_int(AT86RF231_INT, GPIO_NOPULL, GPIO_RISING, (gpio_cb_t)at86rf231_rx_irq, NULL);
+
+
+
     /* CS */
-    gpio_init_out(AT86RF231_CS, GPIO_NOPULL);
+	/*Detect right pink CS*/
+	gpio_init_out(AT86RF231_CS, GPIO_NOPULL);
+	//gpio_clear(AT86RF231_CS);
+	//for(i=0; i < (1000 * CLOCK_CORECLOCK) / 1000; i++);
+	//gpio_set(AT86RF231_CS);
+
     /* SLEEP */
     gpio_init_out(AT86RF231_SLEEP, GPIO_NOPULL);
+
     /* RESET */
     gpio_init_out(AT86RF231_RESET, GPIO_NOPULL);
+
+
+
 }
 
 void at86rf231_reset(void)
 {
     /* force reset */
-    gpio_clear(AT86RF231_RESET);
+	gpio_clear(AT86RF231_RESET);
+
+
+
 
     /* put pins to default values */
     gpio_set(AT86RF231_CS);
     gpio_clear(AT86RF231_SLEEP);
 
     /* additional waiting to comply to min rst pulse width */
-    uint8_t delay = 50;
-    while (delay--){}
+    uint8_t delay = 100 ;
+    while (delay--){  };
 
     gpio_set(AT86RF231_RESET);
+
+
 }
 
 int at86rf231_get_option(netdev_t *dev, netdev_opt_t opt, void *value,
