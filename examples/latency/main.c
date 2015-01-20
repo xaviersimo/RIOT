@@ -103,13 +103,13 @@ int main(void)
 	while(1) {
 		if(iteration < test_repeats) {
 
-#if VITMER_MSG
+	#if VITMER_MSG
 			vtimer_set_msg(&timer, interval, thread_getpid(), msg );
 			for (temp=0; temp < 100 ;temp++){}
 			msg_receive(&m);
-#else
+	#else
 			vtimer_usleep(interval.microseconds); // sleep
-#endif
+	#endif
 
 			vtimer_now(&now); // get actual time after sleep (:=now)
 			diff = timex_sub(now, next); // compute difference between theoretical time after sleep (:=next)
@@ -170,9 +170,9 @@ int main(void)
 			printf("# MAX time is: %i microseconds in %i repetitions\n", max_time_l, max_time_c);
 			printf("# overflow is: %i\n", overflow);
 			printf("# MAX repetitions are: %i repetitions in %i microseconds\n", max_c, max_l);
-#if VITMER_MSG
+	#if VITMER_MSG
 			printf("#The received message is: %s\n", m.content.ptr);
-#endif
+	#endif
 			LED_GREEN_OFF; //indicate test finish
 		}
 	}
