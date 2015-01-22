@@ -26,8 +26,10 @@
 #include "thread.h"
 #include "msg.h"
 
-
-#define VITMER_MSG      (1) //Select test latency
+/*Define test parameters*/
+#define VITMER_MSG		(1) //Select test latency
+#define REPEATS			(100)
+#define INTERVAL		(1000) //Define interval in us
 
 
 #define MSEC (1000)
@@ -52,16 +54,16 @@ int main(void)
 	timex_t diff;
 
 	/*define sleep variables*/
-	timex_t interval = timex_set(0,1000); // set sleep interval to 1000 us = 1 ms
+	timex_t interval = timex_set(0,INTERVAL); // set sleep interval to 1000 us = 1 ms
 
 	/*repetitions parameters*/
 	int iteration = 0;
-	int test_repeats = 1000;
+	int test_repeats = REPEATS;
 
 #if	VITMER_MSG
-	char *msg;
-	msg = "Hello world!"; //message to send
-	msg_t m;
+	int *msg; //pointer sending message
+	msg = 0;
+	msg_t m;  //pointer receiving message
 	int temp = 0;
 	vtimer_t timer;
 #endif
@@ -170,9 +172,6 @@ int main(void)
 			printf("# MAX time is: %i microseconds in %i repetitions\n", max_time_l, max_time_c);
 			printf("# overflow is: %i\n", overflow);
 			printf("# MAX repetitions are: %i repetitions in %i microseconds\n", max_c, max_l);
-	#if VITMER_MSG
-			printf("#The received message is: %s\n", m.content.ptr);
-	#endif
 			LED_GREEN_OFF; //indicate test finish
 		}
 	}
