@@ -28,9 +28,14 @@
 #include "ps.h"
 
 /*Define test parameters*/
-#define THREADS			(10)
-#define THREAD_LATENCY	(6)  //Define the pid number to measure latency.
-#define REPEATS			(1000)
+#define VITMER_MSG		(0) //Select test latency
+
+#define DIFF_PRIORITY   (1) //Select test multithreading with same priority or
+                            //  or thread latency has diferent priority than others.
+#define THREADS			(3) //Select number of threads
+#define THREAD_LATENCY	(4)  //Define the pid number to measure latency.
+//4 thread means from thread_pid =3 to thread_pid = 6
+#define REPEATS			(10)
 #define INTERVAL		(1000) //Define interval in us
 
 /*Define multiple stack for all threads*/
@@ -53,6 +58,7 @@ int num_thread[THREADS +3];
 /*Start funtion for all threads*/
 void *second_thread(void *arg)
 {
+
 	(void) arg;
 
 	/*Define variables control threads*/
@@ -77,20 +83,34 @@ void *second_thread(void *arg)
 	vtimer_now(&now);
 	next = timex_add(now, interval);
 
+#if	VITMER_MSG
+	int *msg_a; //pointer sending message
+	msg_a = 0;
+	msg_t m_a;  //pointer receiving message
+	int temp = 0;
+	vtimer_t timer;
+#endif
+
 	while(1){
 		pid = thread_getpid();
 		thread[num_thread[pid]]++;
 		//printf("pid thread is: %i\n", pid);
 
 		iteration++;
-		//thread_getstatus(pid);
 		//printf("the iteration is %i\n", iteration);
 
-		vtimer_usleep(5*SEC);
 		if(iteration < test_repeats){  //while there are iterations
 			if (pid == THREAD_LATENCY){
-				//printf("thread latency is: %i\n", pid);
+
+#if VITMER_MSG
+				vtimer_set_msg(&timer, interval, thread_getpid(), msg_a );
+				for (temp=0; temp < 100 ;temp++){}
+				msg_receive(&m_a);
+#else
 				vtimer_usleep(interval.microseconds); // sleep
+#endif
+
+				//printf("thread latency is: %i\n", pid);
 				vtimer_now(&now); // get actual time after sleep (:=now)
 				diff = timex_sub(now, next); // compute difference between theoretical time after sleep (:=next)
                                      // and actual time after sleep (:=now)
@@ -114,8 +134,6 @@ void *second_thread(void *arg)
 	}
 	return NULL;
 }
-
-
 
 /*Start main program*/
 int main(void)
@@ -166,16 +184,31 @@ int main(void)
 	/*define multi sleeping thread*/
 	//kernel_pid_t pid[THREADS];
 
-	num_thread[0 & 1 & 2] = 0; //cancel positio num_thread for  main thread and idle thread.
+	num_thread[0 & 1 & 2] = 0; //cancel  num_thread for  main thread and idle thread.
 	kernel_pid_t pid;
 	char buffer[THREADS][11];
+#if DIFF_PRIORITY
+	int priority = 0; //define different priorities
+#endif
 
+/*Creating multiple threads*/
 	for(th=0 ; th < THREADS; th++){
 		sprintf(buffer[th], "th_back_%d", th);
 		//printf("buffer is:%s\n", buffer[th]);
+	#if DIFF_PRIORITY
+		if (THREAD_LATENCY == th + 3)  //Creating thread latency with major priority
+			priority = 2;
+		else
+			priority = 1;
+	#endif
+
 		pid = thread_create(stack[th],
 				KERNEL_CONF_STACKSIZE_MAIN,
-				PRIORITY_MAIN -1,
+	#if DIFF_PRIORITY
+				PRIORITY_MAIN - priority,  //thread latency wiht major priority
+	#else
+				PRIORITY_MAIN -1,   //all the threads wiht major priority
+	#endif
 				CREATE_WOUT_YIELD | CREATE_STACKTEST,
 				second_thread,
 				NULL,
@@ -185,7 +218,7 @@ int main(void)
 	}
 	//thread_print_all();
 	msg_receive(&m_receive); //waiting for receive message from main
-	printf("the receive message is: %s\n", m_receive.content.ptr);
+	printf("#the receive message is: %s\n", m_receive.content.ptr);
 	printf("# Test finish\n");
 	printf("# print histogram\n");
 	vtimer_usleep(SEC);
