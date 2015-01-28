@@ -28,15 +28,15 @@
 #include "ps.h"
 
 /*Define test parameters*/
-#define VITMER_MSG		(0) //Select test latency
+#define VITMER_MSG		0 //Select test latency
 
-#define DIFF_PRIORITY   (1) //Select test multithreading with same priority or
+#define DIFF_PRIORITY	1 //Select test multithreading with same priority or
                             //  or thread latency has diferent priority than others.
-#define THREADS			(3) //Select number of threads
-#define THREAD_LATENCY	(4)  //Define the pid number to measure latency.
+#define THREADS			3 //Select number of threads
+#define THREAD_LATENCY	4  //Define the pid number to measure latency.
 //4 thread means from thread_pid =3 to thread_pid = 6
-#define REPEATS			(10)
-#define INTERVAL		(1000) //Define interval in us
+#define REPEATS			10
+#define INTERVAL		1000 //Define interval in us
 
 /*Define multiple stack for all threads*/
 char stack[THREADS][KERNEL_CONF_STACKSIZE_MAIN];
@@ -213,8 +213,8 @@ int main(void)
 				second_thread,
 				NULL,
 				buffer[th]);
-		num_thread[pid]=th;
-		//printf("num_threads is: %i\n", num_thread[pid]);
+				num_thread[pid]=th;
+				//printf("num_threads is: %i\n", num_thread[pid]);
 	}
 	//thread_print_all();
 	msg_receive(&m_receive); //waiting for receive message from main
