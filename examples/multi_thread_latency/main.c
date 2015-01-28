@@ -30,16 +30,13 @@
 /*Define test parameters*/
 #define VITMER_MSG		0 //Select test latency
 
-#define DIFF_PRIORITY	1 //Select test multithreading with same priority or
-                            //  or thread latency has diferent priority than others.
+#define DIFF_PRIORITY	1 //Select same priority or thread latency with different priority
 #define THREADS			3 //Select number of threads
-#define THREAD_LATENCY	4  //Define the pid number to measure latency.
-//4 thread means from thread_pid =3 to thread_pid = 6
+#define THREAD_LATENCY	4  //Define PID thread latency. 4 thread means PID[3..6]
 #define REPEATS			10
 #define INTERVAL		1000 //Define interval in us
 
-/*Define multiple stack for all threads*/
-char stack[THREADS][KERNEL_CONF_STACKSIZE_MAIN];
+char stack[THREADS][KERNEL_CONF_STACKSIZE_MAIN]; /*Define multiple stack for all threads*/
 
 /*Define time varialbes*/
 #define MSEC (1000)
@@ -51,17 +48,15 @@ int latency[MAX_LATENCY] = {0}; /* define vector for latency */
 int count[MAX_LATENCY] = {0};
 int overflow = 0;
 
-/*Define variables for thread counters*/
+/*Define thread counters*/
 int thread[THREADS] = {0}; //save the repetitions to execute each thread
 int num_thread[THREADS +3];
 
 /*Start funtion for all threads*/
 void *second_thread(void *arg)
 {
-
 	(void) arg;
 
-	/*Define variables control threads*/
 	kernel_pid_t pid;
 
 	/*inizialize iteration parameters*/
@@ -79,7 +74,6 @@ void *second_thread(void *arg)
 
 	/*define sleep variables*/
 	timex_t interval = timex_set(0, INTERVAL); // set sleep interval to 1000 us = 1 ms
-
 	vtimer_now(&now);
 	next = timex_add(now, interval);
 
@@ -94,10 +88,7 @@ void *second_thread(void *arg)
 	while(1){
 		pid = thread_getpid();
 		thread[num_thread[pid]]++;
-		//printf("pid thread is: %i\n", pid);
-
 		iteration++;
-		//printf("the iteration is %i\n", iteration);
 
 		if(iteration < test_repeats){  //while there are iterations
 			if (pid == THREAD_LATENCY){
@@ -109,8 +100,6 @@ void *second_thread(void *arg)
 #else
 				vtimer_usleep(interval.microseconds); // sleep
 #endif
-
-				//printf("thread latency is: %i\n", pid);
 				vtimer_now(&now); // get actual time after sleep (:=now)
 				diff = timex_sub(now, next); // compute difference between theoretical time after sleep (:=next)
                                      // and actual time after sleep (:=now)
@@ -119,7 +108,6 @@ void *second_thread(void *arg)
 				else
 					count[diff.microseconds] += 1; // store diff result for statistics
 					//printf("the latency result is: %"PRIu32" \n", diff.microseconds);
-
 				vtimer_now(&now); // get actual time for next iteration (:=now)
 				next = timex_add(interval, now); // update theoretical time for next iteration
 			} else{
@@ -129,7 +117,6 @@ void *second_thread(void *arg)
 			if (pid == THREAD_LATENCY)
 			msg_send(&m, 2); // thread latency send send finish message to main (pid=2)
 			break;
-
 		}
 	}
 	return NULL;
@@ -138,7 +125,6 @@ void *second_thread(void *arg)
 /*Start main program*/
 int main(void)
 {
-
 	/*vector variable*/
 	int j = 0;
 	int c = 0;
@@ -171,7 +157,6 @@ int main(void)
 	printf("# ********************************************* \n");
 
 	/*Init latency vector*/
-
 	for(j = 0 ; j < MAX_LATENCY; j++) {
 		latency[j] = c;
 		c += 1;
@@ -181,9 +166,6 @@ int main(void)
 
 	/*Define multiple threads*/
 	int th=0;
-	/*define multi sleeping thread*/
-	//kernel_pid_t pid[THREADS];
-
 	num_thread[0 & 1 & 2] = 0; //cancel  num_thread for  main thread and idle thread.
 	kernel_pid_t pid;
 	char buffer[THREADS][11];
@@ -205,9 +187,9 @@ int main(void)
 		pid = thread_create(stack[th],
 				KERNEL_CONF_STACKSIZE_MAIN,
 	#if DIFF_PRIORITY
-				PRIORITY_MAIN - priority,  //thread latency wiht major priority
+				PRIORITY_MAIN - priority,  //thread latency with major priority
 	#else
-				PRIORITY_MAIN -1,   //all the threads wiht major priority
+				PRIORITY_MAIN -1,   //all the threads with major priority
 	#endif
 				CREATE_WOUT_YIELD | CREATE_STACKTEST,
 				second_thread,
