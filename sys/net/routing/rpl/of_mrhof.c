@@ -1,16 +1,20 @@
-/**
- * OF MRHOF implementation
- *
+/*
  * Copyright (C) 2013 Stephan Arndt <arndtste@zedat.fu-berlin.de>
  *
  * This file is subject to the terms and conditions of the GNU Lesser
  * General Public License v2.1. See the file LICENSE in the top level
  * directory for more details.
- *
- * @ingroup rpl
+ */
+
+/**
+ * @ingroup     rpl
  * @{
- * @file
- * @author  Stephan Arndt <arndtste@zedat.fu-berlin.de>
+ * @file        of_mrhof.c
+ * @brief       Objective Function MRHOF.
+ *
+ * Implementation of Objective Function MRHOF.
+ *
+ * @author      Eric Engel <eric.engel@fu-berlin.de>
  * @}
  */
 
@@ -30,10 +34,10 @@ static rpl_dodag_t *which_dodag(rpl_dodag_t *, rpl_dodag_t *);
 static void reset(rpl_dodag_t *);
 static uint16_t calc_path_cost(rpl_parent_t *parent);
 
-uint16_t cur_min_path_cost = MAX_PATH_COST;
-rpl_parent_t *cur_preferred_parent = NULL;
+static uint16_t cur_min_path_cost = MAX_PATH_COST;
+static rpl_parent_t *cur_preferred_parent = NULL;
 
-rpl_of_t rpl_of_mrhof = {
+static rpl_of_t rpl_of_mrhof = {
     0x1,
     calc_rank,
     which_parent,

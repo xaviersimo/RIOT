@@ -43,6 +43,8 @@ const char *_progname;
 char **_native_argv;
 pid_t _native_pid;
 pid_t _native_id;
+unsigned _native_rng_seed = 0;
+int _native_rng_mode = 0;
 const char *_native_unix_socket_path = NULL;
 
 /**
@@ -80,14 +82,14 @@ void _native_log_stdout(char *stdouttype)
         return;
     }
     else if (strcmp(stdouttype, "null") == 0) {
-        if ((stdout_outfile = open("/dev/null", O_WRONLY)) == -1) {
+        if ((stdout_outfile = real_open("/dev/null", O_WRONLY)) == -1) {
             err(EXIT_FAILURE, "_native_log_stdout: open");
         }
     }
     else if (strcmp(stdouttype, "file") == 0) {
         char stdout_logname[255];
         snprintf(stdout_logname, sizeof(stdout_logname), "/tmp/riot.stdout.%d", _native_pid);
-        if ((stdout_outfile = creat(stdout_logname, 0666)) == -1) {
+        if ((stdout_outfile = real_creat(stdout_logname, 0666)) == -1) {
             err(EXIT_FAILURE, "_native_log_stdout: open");
         }
     }
@@ -115,14 +117,14 @@ void _native_log_stderr(char *stderrtype)
         return;
     }
     else if (strcmp(stderrtype, "null") == 0) {
-        if ((stderr_outfile = open("/dev/null", O_WRONLY)) == -1) {
+        if ((stderr_outfile = real_open("/dev/null", O_WRONLY)) == -1) {
             err(EXIT_FAILURE, "_native_log_stderr: open");
         }
     }
     else if (strcmp(stderrtype, "file") == 0) {
         char stderr_logname[255];
         snprintf(stderr_logname, sizeof(stderr_logname), "/tmp/riot.stderr.%d", _native_pid);
-        if ((stderr_outfile = creat(stderr_logname, 0666)) == -1) {
+        if ((stderr_outfile = real_creat(stderr_logname, 0666)) == -1) {
             err(EXIT_FAILURE, "_native_log_stderr: open");
         }
     }
@@ -143,11 +145,34 @@ void daemonize(void)
 
     if (_native_pid > 0) {
         real_printf("RIOT pid: %d\n", _native_pid);
-        exit(EXIT_SUCCESS);
+        real_exit(EXIT_SUCCESS);
     }
     else {
         _native_pid = real_getpid();
     }
+}
+
+/**
+ * Remove any -d options from an argument vector.
+ *
+ * @param[in][out]  argv    an argument vector
+ *
+ * @return                  1 if "-d" was found, 0 otherwise
+ */
+static int filter_daemonize_argv(char **argv)
+{
+    int ret = 0;
+    for (char **narg = argv; *narg != NULL; narg++) {
+        if (strcmp("-d", narg[0]) == 0) {
+            ret = 1;
+            char **xarg = narg;
+            do {
+                xarg[0] = xarg[1];
+            } while (*xarg++ != NULL);
+            narg--; /* rescan current item to filter out double args */
+        }
+    }
+    return ret;
 }
 
 void usage_exit(void)
@@ -179,6 +204,8 @@ void usage_exit(void)
 #endif
     real_printf("\
 -i <id>     specify instance id (set by config module)\n\
+-s <seed>   specify srandom(3) seed (/dev/random is used instead of\n\
+            random(3) if the option is omitted)\n\
 -d          daemonize\n\
 -e          redirect stderr to file\n\
 -E          do not redirect stderr (i.e. leave sterr unchanged despite\n\
@@ -188,7 +215,7 @@ void usage_exit(void)
 
     real_printf("\n\
 The order of command line arguments matters.\n");
-    exit(EXIT_FAILURE);
+    real_exit(EXIT_FAILURE);
 
 }
 
@@ -239,8 +266,17 @@ __attribute__((constructor)) static void startup(int argc, char **argv)
             }
             _native_id = atol(argv[argp]);
         }
+        else if (strcmp("-s", arg) == 0) {
+            if (argp + 1 < argc) {
+                argp++;
+            }
+            else {
+                usage_exit();
+            }
+            _native_rng_seed = atol(argv[argp]);
+            _native_rng_mode = 1;
+        }
         else if (strcmp("-d", arg) == 0) {
-            daemonize();
             if (strcmp(stdiotype, "stdio") == 0) {
                 stdiotype = "null";
             }
@@ -298,6 +334,10 @@ __attribute__((constructor)) static void startup(int argc, char **argv)
         else {
             usage_exit();
         }
+    }
+
+    if (filter_daemonize_argv(_native_argv)) {
+        daemonize();
     }
 
     _native_log_stderr(stderrtype);

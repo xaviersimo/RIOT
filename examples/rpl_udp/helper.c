@@ -37,13 +37,13 @@
 
 extern uint8_t ipv6_ext_hdr_len;
 
-msg_t msg_q[RCV_BUFFER_SIZE];
+static msg_t msg_q[RCV_BUFFER_SIZE];
 
 void rpl_udp_set_id(int argc, char **argv)
 {
     if (argc != 2) {
         printf("Usage: %s address\n", argv[0]);
-#if defined(MODULE_CC110X_LEGACY_CSMA) || defined(MODULE_CC110X_LEGACY)
+#if (defined(MODULE_CC110X) || defined(MODULE_CC110X_LEGACY) || defined(MODULE_CC110X_LEGACY_CSMA))
         printf("\taddress must be an 8 bit integer\n");
 #else
         printf("\taddress must be an 16 bit integer\n");
@@ -121,7 +121,7 @@ void *rpl_udp_monitor(void *arg)
     return NULL;
 }
 
-transceiver_command_t tcmd;
+static transceiver_command_t tcmd;
 
 void rpl_udp_ignore(int argc, char **argv)
 {

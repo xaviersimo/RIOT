@@ -13,7 +13,7 @@
  * @{
  *
  * @file        pktqueue.h
- * @brief       Pointer-centric wrapper for @ref priority_queue
+ * @brief       `pkt_t`-centric wrapper for @ref priority_queue_t
  *
  * @author      Martine Lenders <mlenders@inf.fu-berlin.de>
  */
@@ -24,7 +24,12 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include "pkt.h"
 #include "priority_queue.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * @brief   data type for packet queue nodes
@@ -33,8 +38,8 @@
  */
 typedef struct pktqueue_node_t {
     struct pktqueue_node_t *next;   /**< next node in queue */
-    void *data;                     /**< pointer to the data */
     uint32_t priority;              /**< priority of the node */
+    pkt_t *data;                    /**< pointer to the data */
 } pktqueue_node_t;
 
 /**
@@ -83,7 +88,7 @@ static inline void pktqueue_init(pktqueue_t *queue)
 /**
  * @brief get the packet queue's head without removing it
  *
- * @param[out]  root    the queue
+ * @param[out] queue    the queue
  *
  * @return              the head
  */
@@ -95,7 +100,7 @@ static inline pktqueue_node_t *pktqueue_get_head(pktqueue_t *queue)
 /**
  * @brief remove the packet queue's head
  *
- * @param[in]  root     the queue
+ * @param[in]  queue    the queue
  *
  * @return              the old head
  */
@@ -128,6 +133,10 @@ static inline void pktqueue_remove(pktqueue_t *queue, pktqueue_node_t *node)
 {
     priority_queue_remove((priority_queue_t *)queue, (priority_queue_node_t *) node);
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __PKTQUEUE_H_ */
 /**

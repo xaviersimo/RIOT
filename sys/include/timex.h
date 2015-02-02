@@ -25,7 +25,15 @@
 #include <stdio.h>
 #include <inttypes.h>
 
-// mspgcc bug : PRIxxx macros not defined before mid-2011 versions
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/**
+ * @brief Formater for unsigned 32 bit values
+ *
+ *        mspgcc bug : PRIxxx macros not defined before mid-2011 versions
+ */
 #ifndef PRIu32
 #define PRIu32 "lu"
 #endif
@@ -59,6 +67,7 @@ typedef struct {
  *
  * @return The sum of the two timestamps
  */
+/* cppcheck-suppress passedByValue */
 timex_t timex_add(const timex_t a, const timex_t b);
 
 /**
@@ -69,6 +78,7 @@ timex_t timex_add(const timex_t a, const timex_t b);
  *
  * @return The difference a - b
  */
+/* cppcheck-suppress passedByValue */
 timex_t timex_sub(const timex_t a, const timex_t b);
 
 /**
@@ -91,6 +101,7 @@ timex_t timex_set(uint32_t seconds, uint32_t microseconds);
  * @return 0 if equal
  * @return 1 if a is bigger
  */
+/* cppcheck-suppress passedByValue */
 int timex_cmp(const timex_t a, const timex_t b);
 
 /**
@@ -112,7 +123,7 @@ static inline void timex_normalize(timex_t *time)
  * @return true for a normalized timex_t
  * @return false otherwise
  */
-static inline int timex_isnormalized(timex_t *time)
+static inline int timex_isnormalized(const timex_t *time)
 {
     return (time->microseconds < SEC_IN_USEC);
 }
@@ -124,6 +135,7 @@ static inline int timex_isnormalized(timex_t *time)
  *
  * @return timex representation as uint64_t
  */
+/* cppcheck-suppress passedByValue */
 static inline uint64_t timex_uint64(const timex_t a)
 {
     return (uint64_t) a.seconds * SEC_IN_USEC + a.microseconds;
@@ -163,6 +175,10 @@ static inline const char *timex_to_str(timex_t t, char *timestamp)
              t.seconds, t.microseconds);
     return timestamp;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 /** @} */
 #endif /* __TIMEX_H */

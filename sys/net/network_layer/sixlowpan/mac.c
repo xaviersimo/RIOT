@@ -37,9 +37,6 @@
 #include "net_help.h"
 
 #define ENABLE_DEBUG    (0)
-#if ENABLE_DEBUG
-#define DEBUG_ENABLED
-#endif
 #include "debug.h"
 
 #define RADIO_STACK_SIZE            (KERNEL_CONF_STACKSIZE_MAIN)
@@ -48,10 +45,10 @@
 
 #define DEFAULT_IEEE_802154_PAN_ID  (0x1234)
 
-char radio_stack_buffer[RADIO_STACK_SIZE];
-msg_t msg_q[RADIO_RCV_BUF_SIZE];
+static char radio_stack_buffer[RADIO_STACK_SIZE];
+static msg_t msg_q[RADIO_RCV_BUF_SIZE];
 
-uint8_t lowpan_mac_buf[PAYLOAD_SIZE];
+static uint8_t lowpan_mac_buf[PAYLOAD_SIZE];
 static uint8_t macdsn;
 
 static inline void mac_frame_short_to_eui64(net_if_eui64_t *eui64,
@@ -98,7 +95,7 @@ static void *recv_ieee802154_frame(void *arg)
             length = p->length - hdrlen - IEEE_802154_FCS_LEN;
 #endif
 
-#ifdef DEBUG_ENABLED
+#if ENABLE_DEBUG
             DEBUG("INFO: Received IEEE 802.15.4. packet (length = %d):\n", length);
             DEBUG("INFO: FCF:\n");
             ieee802154_frame_print_fcf_frame(&frame);
@@ -182,7 +179,7 @@ void set_ieee802154_fcf_values(ieee802154_frame_t *frame, uint8_t dest_mode,
     frame->fcf.frame_ver = 0;
     frame->fcf.src_addr_m = src_mode;
     frame->fcf.dest_addr_m = dest_mode;
-#ifdef DEBUG_ENABLED
+#if ENABLE_DEBUG
     ieee802154_frame_print_fcf_frame(frame);
 #endif
 }
@@ -256,7 +253,7 @@ int sixlowpan_mac_prepare_ieee802144_frame(
     ieee802154_frame_init(frame, (uint8_t *)&lowpan_mac_buf);
     memcpy(&lowpan_mac_buf[hdrlen], frame->payload, frame->payload_len);
     /* set FCS */
-#ifdef MODULE_CC110X_LEGACY
+#if (defined(MODULE_CC110X) || defined(MODULE_CC110X_LEGACY))
     fcs = (uint16_t *)&lowpan_mac_buf[frame->payload_len + hdrlen+1];
 #else
     fcs = (uint16_t *)&lowpan_mac_buf[frame->payload_len + hdrlen];

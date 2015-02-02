@@ -35,16 +35,16 @@
 
 #define TRANSCEIVER TRANSCEIVER_DEFAULT
 
-char monitor_stack_buffer[MONITOR_STACK_SIZE];
+static char monitor_stack_buffer[MONITOR_STACK_SIZE];
 radio_address_t id;
 
-uint8_t is_root = 0;
+static uint8_t is_root = 0;
 
 void rpl_udp_init(int argc, char **argv)
 {
     transceiver_command_t tcmd;
     msg_t m;
-    uint8_t chan = RADIO_CHANNEL;
+    uint32_t chan = RADIO_CHANNEL;
 
     if (argc != 2) {
         printf("Usage: %s (r|n|h)\n", argv[0]);
@@ -60,7 +60,7 @@ void rpl_udp_init(int argc, char **argv)
                ((command == 'h') ? "non-" : ""),
                (((command == 'n') || (command == 'h')) ? "node" : "root"), id);
 
-#if defined(MODULE_CC110X_LEGACY_CSMA) || defined(MODULE_CC110X_LEGACY)
+#if (defined(MODULE_CC110X) || defined(MODULE_CC110X_LEGACY) || defined(MODULE_CC110X_LEGACY_CSMA))
         if (!id || (id > 255)) {
             printf("ERROR: address not a valid 8 bit integer\n");
             return;

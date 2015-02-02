@@ -41,8 +41,9 @@
 /**
  * manage the heap
  */
-extern uint32_t _end;                       /* address of last used memory cell */
-caddr_t heap_top = (caddr_t)&_end + 4;
+extern char _sheap;                 /* start of the heap */
+extern char _eheap;                 /* end of the heap */
+caddr_t heap_top = (caddr_t)&_sheap + 4;
 
 /**
  * @brief use mutex for waiting on incoming UART chars
@@ -111,10 +112,7 @@ void _exit(int n)
  *
  * The current heap implementation is very rudimentary, it is only able to allocate
  * memory. But it does not
- * - check if the returned address is valid (no check if the memory very exists)
  * - have any means to free memory again
- *
- * TODO: check if the requested memory is really available
  *
  * @return [description]
  */
@@ -122,7 +120,16 @@ caddr_t _sbrk_r(struct _reent *r, ptrdiff_t incr)
 {
     unsigned int state = disableIRQ();
     caddr_t res = heap_top;
-    heap_top += incr;
+
+    if (((incr > 0) && ((heap_top + incr > &_eheap) || (heap_top + incr < res))) ||
+        ((incr < 0) && ((heap_top + incr < &_sheap) || (heap_top + incr > res)))) {
+        r->_errno = ENOMEM;
+        res = (void *) -1;
+    }
+    else {
+        heap_top += incr;
+    }
+
     restoreIRQ(state);
     return res;
 }
@@ -146,9 +153,29 @@ int _getpid(void)
  *
  * @return      TODO
  */
+__attribute__ ((weak))
 int _kill_r(struct _reent *r, int pid, int sig)
 {
+    (void) pid;
+    (void) sig;
     r->_errno = ESRCH;                      /* not implemented yet */
+    return -1;
+}
+
+/**
+ * @brief Send a signal to a thread
+ *
+ * @param[in] pid the pid to send to
+ * @param[in] sig the signal to send
+ *
+ * @return TODO
+ */
+__attribute__ ((weak))
+int _kill(int pid, int sig)
+{
+    (void) pid;
+    (void) sig;
+    errno = ESRCH;                         /* not implemented yet */
     return -1;
 }
 
@@ -163,6 +190,8 @@ int _kill_r(struct _reent *r, int pid, int sig)
  */
 int _open_r(struct _reent *r, const char *name, int mode)
 {
+    (void) name;
+    (void) mode;
     r->_errno = ENODEV;                     /* not implemented yet */
     return -1;
 }
@@ -186,6 +215,16 @@ int _open_r(struct _reent *r, const char *name, int mode)
  */
 int _read_r(struct _reent *r, int fd, void *buffer, unsigned int count)
 {
+    if (fd != STDIN_FILENO) {
+        r->_errno = EBADF;
+        return -1;
+    }
+
+    r->_errno = 0;
+    if (count == 0) {
+        return 0;
+    }
+
 #ifndef MODULE_UART0
     while (rx_buf.avail == 0) {
         mutex_lock(&uart_rx_mutex);
@@ -215,7 +254,13 @@ int _read_r(struct _reent *r, int fd, void *buffer, unsigned int count)
  */
 int _write_r(struct _reent *r, int fd, const void *data, unsigned int count)
 {
-    for (int i = 0; i < count; i++) {
+    if ((fd != STDOUT_FILENO) && (fd != STDERR_FILENO)) {
+        r->_errno = EBADF;
+        return -1;
+    }
+
+    r->_errno = 0;
+    for (unsigned i = 0; i < count; i++) {
         uart_write_blocking(STDIO, ((char*)data)[i]);
     }
     return count;
@@ -231,6 +276,7 @@ int _write_r(struct _reent *r, int fd, const void *data, unsigned int count)
  */
 int _close_r(struct _reent *r, int fd)
 {
+    (void) fd;
     r->_errno = ENODEV;                     /* not implemented yet */
     return -1;
 }
@@ -247,6 +293,9 @@ int _close_r(struct _reent *r, int fd)
  */
 _off_t _lseek_r(struct _reent *r, int fd, _off_t pos, int dir)
 {
+    (void) fd;
+    (void) pos;
+    (void) dir;
     r->_errno = ENODEV;                     /* not implemented yet */
     return -1;
 }
@@ -262,6 +311,8 @@ _off_t _lseek_r(struct _reent *r, int fd, _off_t pos, int dir)
  */
 int _fstat_r(struct _reent *r, int fd, struct stat * st)
 {
+    (void) fd;
+    (void) st;
     r->_errno = ENODEV;                     /* not implemented yet */
     return -1;
 }
@@ -277,6 +328,8 @@ int _fstat_r(struct _reent *r, int fd, struct stat * st)
  */
 int _stat_r(struct _reent *r, char *name, struct stat *st)
 {
+    (void) name;
+    (void) st;
     r->_errno = ENODEV;                     /* not implemented yet */
     return -1;
 }
@@ -310,6 +363,7 @@ int _isatty_r(struct _reent *r, int fd)
  */
 int _unlink_r(struct _reent *r, char* path)
 {
+    (void) path;
     r->_errno = ENODEV;                     /* not implemented yet */
     return -1;
 }

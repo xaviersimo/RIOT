@@ -27,9 +27,16 @@
 #include "kernel_types.h"
 #include "transceiver.h"
 #include "hwtimer.h"
+#include "config.h"
 
 #define ENABLE_DEBUG (1)
 #include "debug.h"
+
+#ifndef AT86RF231_SPI_SPEED
+#define SPI_SPEED    SPI_SPEED_5MHZ
+#else
+#define SPI_SPEED    AT86RF231_SPI_SPEED
+#endif
 
 #define _MAX_RETRIES    (100)
 
@@ -184,8 +191,14 @@ void at86rf231_switch_to_rx(void)
         }
     } while (at86rf231_get_status() != AT86RF231_TRX_STATUS__PLL_ON);
 
+#ifndef MODULE_OPENWSN
     /* Reset IRQ to TRX END only */
     at86rf231_reg_write(AT86RF231_REG__IRQ_MASK, AT86RF231_IRQ_STATUS_MASK__TRX_END);
+#else
+    /* OpenWSN also needs RX_START IRQ */
+    at86rf231_reg_write(AT86RF231_REG__IRQ_MASK, ( AT86RF231_IRQ_STATUS_MASK__RX_START | AT86RF231_IRQ_STATUS_MASK__TRX_END));
+#endif
+
 
     /* Read IRQ to clear it */
     at86rf231_reg_read(AT86RF231_REG__IRQ_STATUS);
@@ -210,6 +223,7 @@ void at86rf231_rxoverflow_irq(void)
     /* TODO */
 }
 
+#ifndef MODULE_OPENWSN
 void at86rf231_rx_irq(void)
 {
     /* check if we are in sending state */
@@ -226,6 +240,7 @@ void at86rf231_rx_irq(void)
         at86rf231_rx_handler();
     }
 }
+#endif
 
 int at86rf231_add_raw_recv_callback(netdev_t *dev,
                                     netdev_802154_raw_packet_cb_t recv_cb)
@@ -276,8 +291,36 @@ radio_address_t at86rf231_set_address(radio_address_t address)
 {
     radio_address = address;
 
+    uint8_t old_state = at86rf231_get_status() & AT86RF231_TRX_STATUS_MASK__TRX_STATUS;
+
+    /* Go to state PLL_ON */
+    at86rf231_reg_write(AT86RF231_REG__TRX_STATE, AT86RF231_TRX_STATE__PLL_ON);
+
+    /* wait until it is on PLL_ON state */
+    do {
+        int max_wait = _MAX_RETRIES;
+        if (!--max_wait) {
+            DEBUG("at86rf231 : ERROR : could not enter PLL_ON mode\n");
+            break;
+        }
+    } while ((at86rf231_get_status() & AT86RF231_TRX_STATUS_MASK__TRX_STATUS)
+             != AT86RF231_TRX_STATUS__PLL_ON);
+
     at86rf231_reg_write(AT86RF231_REG__SHORT_ADDR_0, (uint8_t)(0x00FF & radio_address));
     at86rf231_reg_write(AT86RF231_REG__SHORT_ADDR_1, (uint8_t)(radio_address >> 8));
+
+    /* Go to state old state */
+    at86rf231_reg_write(AT86RF231_REG__TRX_STATE, old_state);
+
+    /* wait until it is on old state */
+    do {
+        int max_wait = _MAX_RETRIES;
+        if (!--max_wait) {
+            DEBUG("at86rf231 : ERROR : could not enter old state %x\n", old_state);
+            break;
+        }
+    } while ((at86rf231_get_status() & AT86RF231_TRX_STATUS_MASK__TRX_STATUS)
+             != old_state);
 
     return radio_address;
 }
@@ -291,6 +334,21 @@ uint64_t at86rf231_set_address_long(uint64_t address)
 {
     radio_address_long = address;
 
+    uint8_t old_state = at86rf231_get_status() & AT86RF231_TRX_STATUS_MASK__TRX_STATUS;
+
+    /* Go to state PLL_ON */
+    at86rf231_reg_write(AT86RF231_REG__TRX_STATE, AT86RF231_TRX_STATE__PLL_ON);
+
+    /* wait until it is on PLL_ON state */
+    do {
+        int max_wait = _MAX_RETRIES;
+        if (!--max_wait) {
+            DEBUG("at86rf231 : ERROR : could not enter PLL_ON mode\n");
+            break;
+        }
+    } while ((at86rf231_get_status() & AT86RF231_TRX_STATUS_MASK__TRX_STATUS)
+             != AT86RF231_TRX_STATUS__PLL_ON);
+
     at86rf231_reg_write(AT86RF231_REG__IEEE_ADDR_0, (uint8_t)(0x00000000000000FF & radio_address_long));
     at86rf231_reg_write(AT86RF231_REG__IEEE_ADDR_1, (uint8_t)(0x000000000000FF00 & radio_address_long >> 8));
     at86rf231_reg_write(AT86RF231_REG__IEEE_ADDR_2, (uint8_t)(0x0000000000FF0000 & radio_address_long >> 16));
@@ -299,6 +357,19 @@ uint64_t at86rf231_set_address_long(uint64_t address)
     at86rf231_reg_write(AT86RF231_REG__IEEE_ADDR_5, (uint8_t)(0x0000FF0000000000 & radio_address_long >> 40));
     at86rf231_reg_write(AT86RF231_REG__IEEE_ADDR_6, (uint8_t)(0x00FF000000000000 & radio_address_long >> 48));
     at86rf231_reg_write(AT86RF231_REG__IEEE_ADDR_7, (uint8_t)(radio_address_long >> 56));
+
+    /* Go to state old state */
+    at86rf231_reg_write(AT86RF231_REG__TRX_STATE, old_state);
+
+    /* wait until it is on old state */
+    do {
+        int max_wait = _MAX_RETRIES;
+        if (!--max_wait) {
+            DEBUG("at86rf231 : ERROR : could not enter old state %x\n", old_state);
+            break;
+        }
+    } while ((at86rf231_get_status() & AT86RF231_TRX_STATUS_MASK__TRX_STATUS)
+             != old_state);
 
     return radio_address_long;
 }
@@ -365,23 +436,10 @@ int at86rf231_get_monitor(void)
 
 void at86rf231_gpio_spi_interrupts_init(void)
 {
-
-
-	 int i=0;
-
-	/*Detect right pink clk*/
-	//gpio_init_out(AT86RF231_clk, GPIO_NOPULL);
-    //gpio_set(AT86RF231_clk);
-	// for(i=0; i < (100 * CLOCK_CORECLOCK) / 1000; i++);
-	//gpio_clear(AT86RF231_clk);
-
-	/* SPI init */
-     spi_init_master(AT86RF231_SPI, SPI_CONF_FIRST_RISING, SPI_SPEED_10MHZ);
-
-  //   gpio_set(AT86RF231_clk);
- //	for(i=0; i < (100 * CLOCK_CORECLOCK) / 1000; i++);
- //	gpio_clear(AT86RF231_clk);
-
+    /* SPI init */
+    spi_acquire(AT86RF231_SPI);
+    spi_init_master(AT86RF231_SPI, SPI_CONF_FIRST_RISING, SPI_SPEED);
+    spi_release(AT86RF231_SPI);
     /* IRQ0 */
     gpio_init_int(AT86RF231_INT, GPIO_NOPULL, GPIO_RISING, (gpio_cb_t)at86rf231_rx_irq, NULL);
 
@@ -417,9 +475,8 @@ void at86rf231_reset(void)
     gpio_clear(AT86RF231_SLEEP);
 
     /* additional waiting to comply to min rst pulse width */
-    uint8_t delay = 100 ;
-    while (delay--){  };
-
+    uint8_t volatile delay = 50; /* volatile to ensure it isn't optimized away */
+    while (--delay);
     gpio_set(AT86RF231_RESET);
 
 

@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 2014 Freie Universität Berlin
  *
- * This file is subject to the terms and conditions of the GNU Lesser General
- * Public License v2.1. See the file LICENSE in the top level directory for more
- * details.
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
  */
 
 /**
@@ -104,6 +104,97 @@ extern "C" {
 #define UART_2_TX_PIN       8
 #define UART_2_RX_PIN       9
 #define UART_2_AF           7
+/** @} */
+
+/**
+ * @brief PWM configuration
+ * @{
+ */
+#define PWM_NUMOF           (1U)
+#define PWM_0_EN            1
+#define PWM_1_EN            1
+
+#define PWM_MAX_CHANNELS    4
+
+/* PWM 0 device configuration */
+#define PWM_0_DEV           TIM3
+#define PWM_0_CHANNELS      4
+#define PWM_0_CLK           (36000000U)
+#define PWM_0_CLKEN()       (RCC->APB1ENR |= RCC_APB1ENR_TIM3EN)
+#define PWM_0_CLKDIS()      (RCC->APB1ENR &= ~(RCC_APB1ENR_TIM3EN))
+/* PWM 0 pin configuration */
+#define PWM_0_PORT          GPIOC
+#define PWM_0_PORT_CLKEN()  (RCC->AHBENR |= RCC_AHBENR_GPIOCEN)
+#define PWM_0_PIN_CH0       6
+#define PWM_0_PIN_CH1       7
+#define PWM_0_PIN_CH2       8
+#define PWM_0_PIN_CH3       9
+#define PWM_0_PIN_AF        2
+
+/* PWM 1 device configuration */
+#define PWM_1_DEV           TIM4
+#define PWM_1_CHANNELS      4
+#define PWM_1_CLK           (36000000U)
+#define PWM_1_CLKEN()       (RCC->APB1ENR |= RCC_APB1ENR_TIM4EN)
+#define PWM_1_CLKDIS()      (RCC->APB1ENR &= ~(RCC_APB1ENR_TIM4EN))
+/* PWM 1 pin configuration */
+#define PWM_1_PORT          GPIOD
+#define PWM_1_PORT_CLKEN()  (RCC->AHBENR |= RCC_AHBENR_GPIODEN)
+#define PWM_1_PIN_CH0       12
+#define PWM_1_PIN_CH1       13
+#define PWM_1_PIN_CH2       14
+#define PWM_1_PIN_CH3       15
+#define PWM_1_PIN_AF        2
+/** @} */
+
+/**
+ * @name SPI configuration
+ * @{
+ */
+#define SPI_NUMOF           (2U)
+#define SPI_0_EN            1
+#define SPI_1_EN            1
+#define SPI_IRQ_PRIO        1
+
+/* SPI 0 device config */
+#define SPI_0_DEV               SPI1
+#define SPI_0_CLKEN()           (RCC->APB2ENR |= RCC_APB2ENR_SPI1EN)
+#define SPI_0_CLKDIS()          (RCC->APB2ENR &= ~RCC_APB2ENR_SPI1EN)
+#define SPI_0_IRQ               SPI1_IRQn
+#define SPI_0_IRQ_HANDLER       isr_spi1
+/* SPI 0 pin configuration */
+#define SPI_0_SCK_PORT          GPIOA
+#define SPI_0_SCK_PIN           5
+#define SPI_0_SCK_AF            5
+#define SPI_0_SCK_PORT_CLKEN()  (RCC->AHBENR |= RCC_AHBENR_GPIOAEN)
+#define SPI_0_MISO_PORT         GPIOA
+#define SPI_0_MISO_PIN          6
+#define SPI_0_MISO_AF           5
+#define SPI_0_MISO_PORT_CLKEN() (RCC->AHBENR |= RCC_AHBENR_GPIOAEN)
+#define SPI_0_MOSI_PORT         GPIOA
+#define SPI_0_MOSI_PIN          7
+#define SPI_0_MOSI_AF           5
+#define SPI_0_MOSI_PORT_CLKEN() (RCC->AHBENR |= RCC_AHBENR_GPIOAEN)
+
+/* SPI 1 device config */
+#define SPI_1_DEV               SPI3
+#define SPI_1_CLKEN()           (RCC->APB1ENR |= RCC_APB1ENR_SPI3EN)
+#define SPI_1_CLKDIS()          (RCC->APB1ENR &= ~RCC_APB1ENR_SPI3EN)
+#define SPI_1_IRQ               SPI3_IRQn
+#define SPI_1_IRQ_HANDLER       isr_spi3
+/* SPI 1 pin configuration */
+#define SPI_1_SCK_PORT          GPIOC
+#define SPI_1_SCK_PIN           10
+#define SPI_1_SCK_AF            6
+#define SPI_1_SCK_PORT_CLKEN()  (RCC->AHBENR |= RCC_AHBENR_GPIOCEN)
+#define SPI_1_MISO_PORT         GPIOC
+#define SPI_1_MISO_PIN          11
+#define SPI_1_MISO_AF           6
+#define SPI_1_MISO_PORT_CLKEN() (RCC->AHBENR |= RCC_AHBENR_GPIOCEN)
+#define SPI_1_MOSI_PORT         GPIOC
+#define SPI_1_MOSI_PIN          12
+#define SPI_1_MOSI_AF           6
+#define SPI_1_MOSI_PORT_CLKEN() (RCC->AHBENR |= RCC_AHBENR_GPIOCEN)
 /** @} */
 
 /**

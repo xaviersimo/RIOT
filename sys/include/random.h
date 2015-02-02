@@ -13,7 +13,14 @@
  * @brief       Random number generator
  */
 
+#ifndef RANDOM_H
+#define RANDOM_H
+
 #include <inttypes.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #ifndef PRNG_FLOAT
 #  define PRNG_FLOAT (0)
@@ -72,3 +79,9 @@ double genrand_real_exclusive(void);
 double genrand_res53(void);
 
 #endif /* PRNG_FLOAT */
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* RANDOM_H */
