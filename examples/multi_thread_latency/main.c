@@ -28,12 +28,12 @@
 #include "ps.h"
 
 /*Define test parameters*/
-#define VITMER_MSG		0 //Select test latency
+#define VITMER_MSG		1 //Select test latency
 
 #define DIFF_PRIORITY	1 //Select same priority or thread latency with different priority
-#define THREADS			3 //Select number of threads
-#define THREAD_LATENCY	4  //Define PID thread latency. 4 thread means PID[3..6]
-#define REPEATS			10
+#define THREADS			1 //Select number of threads
+#define THREAD_LATENCY	3  //Define PID thread latency. 4 thread means PID[3..6]
+#define REPEATS			100000
 #define INTERVAL		1000 //Define interval in us
 
 char stack[THREADS][KERNEL_CONF_STACKSIZE_MAIN]; /*Define multiple stack for all threads*/
@@ -93,13 +93,13 @@ void *second_thread(void *arg)
 		if(iteration < test_repeats){  //while there are iterations
 			if (pid == THREAD_LATENCY){
 
-#if VITMER_MSG
+	#if VITMER_MSG
 				vtimer_set_msg(&timer, interval, thread_getpid(), msg_a );
 				for (temp=0; temp < 100 ;temp++){}
 				msg_receive(&m_a);
-#else
+	#else
 				vtimer_usleep(interval.microseconds); // sleep
-#endif
+	#endif
 				vtimer_now(&now); // get actual time after sleep (:=now)
 				diff = timex_sub(now, next); // compute difference between theoretical time after sleep (:=next)
                                      // and actual time after sleep (:=now)

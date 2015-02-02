@@ -357,7 +357,7 @@ extern "C" {
 
 /**
  * @name I2C configuration
-  * @{
+  * @{I2C1_0
  */
 #define I2C_NUMOF           (1U)
 #define I2C_0_EN            1
@@ -393,6 +393,10 @@ extern "C" {
 #define I2C_1_SDA_PIN       11
 #define I2C_1_SDA_CLKEN()   (RCC->APB2ENR |= RCC_APB2ENR_IOPBEN)
 /** @} */
+
+
+
+
 
 
 #define ADC_NUMOF           1
