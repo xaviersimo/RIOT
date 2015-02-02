@@ -26,10 +26,6 @@
 #include "periph/spi.h"
 #include "periph/gpio.h"
 
-#define ENABLE_DEBUG (1)
-#include "debug.h"
-
-
 void at86rf231_reg_write(uint8_t addr, uint8_t value)
 {
     /* Acquire exclusive access to the bus. */
@@ -37,9 +33,7 @@ void at86rf231_reg_write(uint8_t addr, uint8_t value)
     /* Start the SPI transfer */
     gpio_clear(AT86RF231_CS);
     /* write to register */
-    int transfered = spi_transfer_reg(AT86RF231_SPI, AT86RF231_ACCESS_REG | AT86RF231_ACCESS_WRITE | addr, value, 0);
-
-    //DEBUG("WRITE ha retornat transfered: %d\n", transfered);
+    spi_transfer_reg(AT86RF231_SPI, AT86RF231_ACCESS_REG | AT86RF231_ACCESS_WRITE | addr, value, 0);
     /* End the SPI transfer */
     gpio_set(AT86RF231_CS);
     /* Release the bus for other threads. */
@@ -48,17 +42,14 @@ void at86rf231_reg_write(uint8_t addr, uint8_t value)
 
 uint8_t at86rf231_reg_read(uint8_t addr)
 {
+    char value;
 
     /* Acquire exclusive access to the bus. */
     spi_acquire(AT86RF231_SPI);
     /* Start the SPI transfer */
     gpio_clear(AT86RF231_CS);
-
     /* read from register */
-    int ret = spi_transfer_reg(AT86RF231_SPI, AT86RF231_ACCESS_REG | AT86RF231_ACCESS_READ | addr, 0, &value);
-
-
-    DEBUG("READ ha retornat: %d\n", ret);
+    spi_transfer_reg(AT86RF231_SPI, AT86RF231_ACCESS_REG | AT86RF231_ACCESS_READ | addr, 0, &value);
     /* End the SPI transfer */
     gpio_set(AT86RF231_CS);
     /* Release the bus for other threads. */
