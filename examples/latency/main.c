@@ -29,7 +29,7 @@
 /*Define test parameters*/
 #define VITMER_MSG		(1) //Select test latency
 #define REPEATS			(100)
-#define INTERVAL		(5000) //Define interval in us
+#define INTERVAL		(1000) //Define interval in us
 
 
 #define MSEC (1000)
