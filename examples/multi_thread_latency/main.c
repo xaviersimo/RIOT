@@ -31,9 +31,9 @@
 #define VITMER_MSG		1 //Select test latency
 
 #define DIFF_PRIORITY	1 //Select same priority or thread latency with different priority
-#define THREADS			1 //Select number of threads
-#define THREAD_LATENCY	3  //Define PID thread latency. 4 thread means PID[3..6]
-#define REPEATS			100000
+#define THREADS			3 //Select number of threads
+#define THREAD_LATENCY	5  //Define PID thread latency. 4 thread means PID[3..6]
+#define REPEATS			100
 #define INTERVAL		1000 //Define interval in us
 
 char stack[THREADS][KERNEL_CONF_STACKSIZE_MAIN]; /*Define multiple stack for all threads*/
@@ -94,7 +94,7 @@ void *second_thread(void *arg)
 			if (pid == THREAD_LATENCY){
 
 	#if VITMER_MSG
-				vtimer_set_msg(&timer, interval, thread_getpid(), msg_a );
+				vtimer_set_msg(&timer, interval, thread_getpid(), 0, msg_a );
 				for (temp=0; temp < 100 ;temp++){}
 				msg_receive(&m_a);
 	#else
@@ -153,7 +153,11 @@ int main(void)
 	//printf("# Interval sleep: %"PRIu32" sec and %"PRIu32" micro\n", interval.seconds, interval.microseconds);
 	printf("# Samples: %i\n", MAX_LATENCY);
 	//printf("# Repetitions: %i\n", test_repeats);
+#ifdef DIFF_PRIORITY
+	printf("# numeber threads: %i (with different priority)\n", THREADS);
+#else
 	printf("# numeber threads: %i (with same priority)\n", THREADS);
+#endif
 	printf("# ********************************************* \n");
 
 	/*Init latency vector*/

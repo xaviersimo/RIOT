@@ -106,7 +106,7 @@ int main(void)
 		if(iteration < test_repeats) {
 
 	#if VITMER_MSG
-			vtimer_set_msg(&timer, interval, thread_getpid(), msg );
+			vtimer_set_msg(&timer, interval, thread_getpid(), 0, msg );
 			for (temp=0; temp < 100 ;temp++){}
 			msg_receive(&m);
 	#else
