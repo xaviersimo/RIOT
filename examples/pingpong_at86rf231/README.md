@@ -1,10 +1,11 @@
-test SPI!
-============
+Pingpong using at86rf231
+========================
 
-Only configure the transceiver module AT86RF231
+The application are doing the follow steps:
 
-Read the version number and part number from SPI
+1- config radio module using default transceiver functions
 
-To check the test, it should show for the debug port number "3" as a part_num and number "2" as a version number
+2- define header frame from 802.15.4 protocol
 
+3- send and receive different packets
 
