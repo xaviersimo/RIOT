@@ -58,12 +58,12 @@ extern "C" {
  */
 #define AT86RF231_SPI       SPI_0
 #define AT86RF231_CS        GPIO_11 // xxx
-#define AT86RF231_INT       GPIO_IRQ_12 // xxx probably PC9
+#define AT86RF231_INT       GPIO_12 // xxx probably PC9
 #define AT86RF231_RESET     GPIO_13 // xxx
 #define AT86RF231_SLEEP     GPIO_14 // xxx
-#define AT86RF231_mosi       GPIO_8
-#define AT86RF231_miso        GPIO_9
-#define AT86RF231_clk        GPIO_10
+#define AT86RF231_mosi      GPIO_8
+#define AT86RF231_miso      GPIO_9
+#define AT86RF231_clk       GPIO_10
 
 
 //#define AT86RF231_CHANNEL   15
@@ -73,12 +73,12 @@ extern "C" {
  * @name Define the interface to the CC1101 radio
  * @{
  */
-#define CC1100_SPI       SPI_0
-#define RX_BUF_SIZE      300
-#define CC1100_CS        GPIO_11 // xxx
-#define CC1100_INT       GPIO_12 // xxx probably PC9
-#define CC1100_RESET
-#define CC1100_SLEEP
+//#define CC1100_SPI       SPI_0
+//#define RX_BUF_SIZE      300
+//#define CC1100_CS        GPIO_11 // xxx
+//#define CC1100_INT       GPIO_12 // xxx probably PC9
+//#define CC1100_RESET
+//#define CC1100_SLEEP
 /** @} */
 
 
