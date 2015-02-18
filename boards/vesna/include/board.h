@@ -57,13 +57,10 @@ extern "C" {
  * @{
  */
 #define AT86RF231_SPI       SPI_0
-#define AT86RF231_CS        GPIO_11 // xxx
+#define AT86RF231_CS        GPIO_11
 #define AT86RF231_INT       GPIO_12 // xxx probably PC9
-#define AT86RF231_RESET     GPIO_13 // xxx
-#define AT86RF231_SLEEP     GPIO_14 // xxx
-#define AT86RF231_mosi      GPIO_8
-#define AT86RF231_miso      GPIO_9
-#define AT86RF231_clk       GPIO_10
+#define AT86RF231_RESET     GPIO_13
+#define AT86RF231_SLEEP     GPIO_14
 
 
 //#define AT86RF231_CHANNEL   15

@@ -32,8 +32,8 @@ extern "C" {
 
 /* configuration of peripheral bus clock prescalers */
 #define CLOCK_AHB_DIV       RCC_CFGR_HPRE_DIV1      /* AHB clock -> 8MHz */
-#define CLOCK_APB2_DIV      RCC_CFGR_PPRE2_DIV1    /* APB2 clock -> 4MHz */
-#define CLOCK_APB1_DIV      RCC_CFGR_PPRE1_DIV1     /* APB1 clock -> 4MHz */
+#define CLOCK_APB2_DIV      RCC_CFGR_PPRE2_DIV1    /* APB2 clock -> 8MHz */
+#define CLOCK_APB1_DIV      RCC_CFGR_PPRE1_DIV1     /* APB1 clock -> 8MHz */
 
 /* configuration of flash access cycles */
 #define CLOCK_FLASH_LATENCY 0
@@ -88,7 +88,7 @@ extern "C" {
  */
 #define UART_NUMOF          (1U)
 #define UART_0_EN           1
-#define UART_1_EN           0
+#define UART_1_EN           1
 #define UART_2_EN           0
 #define UART_3_EN           0
 #define UART_IRQ_PRIO       1
@@ -111,7 +111,7 @@ extern "C" {
 #define UART_1_CLKEN()      (RCC->APB1ENR |= RCC_APB1ENR_USART2EN)
 #define UART_1_IRQ          USART2_IRQn
 #define UART_1_ISR          isr_usart2
-#define UART_1_BUS_FREQ     36000000
+#define UART_1_BUS_FREQ     8000000
 /* UART 1 pin configuration */
 #define UART_1_PORT         GPIOA
 #define UART_1_PORT_CLKEN() (RCC->APB2ENR |= RCC_APB2ENR_IOPAEN)
@@ -152,14 +152,14 @@ extern "C" {
 #define GPIO_0_EN           1
 #define GPIO_1_EN           1 // PC13
 #define GPIO_2_EN           1 // PB1
-#define GPIO_3_EN           1
-#define GPIO_4_EN           1
-#define GPIO_5_EN           1
-#define GPIO_6_EN           1
-#define GPIO_7_EN           1
-#define GPIO_8_EN           1
-#define GPIO_9_EN           1
-#define GPIO_10_EN          1
+#define GPIO_3_EN           0
+#define GPIO_4_EN           0
+#define GPIO_5_EN           0
+#define GPIO_6_EN           0
+#define GPIO_7_EN           0
+#define GPIO_8_EN           0
+#define GPIO_9_EN           0
+#define GPIO_10_EN          0
 #define GPIO_11_EN          1
 #define GPIO_12_EN          1
 #define GPIO_13_EN          1
@@ -173,19 +173,19 @@ extern "C" {
  * service routines to call the correct callbacks.
  * GPIO_IRQ_x where x matches the value defined by GPIO_y_PIN
  */
-#define GPIO_IRQ_1          GPIO_13
-#define GPIO_IRQ_2          GPIO_14
-#define GPIO_IRQ_3          GPIO_0
-#define GPIO_IRQ_4          GPIO_4
-#define GPIO_IRQ_5          GPIO_8
-#define GPIO_IRQ_6          GPIO_9
-#define GPIO_IRQ_7          GPIO_5
-#define GPIO_IRQ_8          GPIO_1
-#define GPIO_IRQ_9          GPIO_4
-#define GPIO_IRQ_11         GPIO_7
-#define GPIO_IRQ_12         GPIO_12
-#define GPIO_IRQ_13         GPIO_9
-#define GPIO_IRQ_14         GPIO_10
+//#define GPIO_IRQ_1          GPIO_13
+//#define GPIO_IRQ_2          GPIO_14
+//#define GPIO_IRQ_3          GPIO_0
+//#define GPIO_IRQ_4          GPIO_4
+//#define GPIO_IRQ_5          GPIO_8
+//#define GPIO_IRQ_6          GPIO_9
+//#define GPIO_IRQ_7          GPIO_5
+//#define GPIO_IRQ_8          GPIO_1
+//#define GPIO_IRQ_9          GPIO_4
+//#define GPIO_IRQ_11         GPIO_7
+#define GPIO_IRQ_9         GPIO_12
+//#define GPIO_IRQ_13         GPIO_9
+//#define GPIO_IRQ_14         GPIO_10
 
 /* GPIO channel 0 config */
 #define GPIO_0_PORT         GPIOA                   /* Used for user button 1 */
@@ -265,7 +265,7 @@ extern "C" {
 #define GPIO_12_PIN         9
 #define GPIO_12_CLKEN()     (RCC->APB2ENR |= RCC_APB2ENR_IOPCEN)
 #define GPIO_12_EXTI_CFG()  (AFIO->EXTICR[2] |= AFIO_EXTICR3_EXTI9_PC)
-#define GPIO_12_IRQ         EXTI9_5_IRQn // xxx check this!!!
+#define GPIO_12_IRQ      	EXTI9_5_IRQn // xxx check this!!!
 /* GPIO channel 13 config reset_transceiver */
 #define GPIO_13_PORT        GPIOC
 #define GPIO_13_PIN         11
@@ -359,8 +359,8 @@ extern "C" {
  * @name I2C configuration
   * @{I2C1_0
  */
-#define I2C_NUMOF           (1U)
-#define I2C_0_EN            1
+#define I2C_NUMOF           (0)
+#define I2C_0_EN            0
 #define I2C_1_EN            0
 #define I2C_IRQ_PRIO        1
 #define I2C_APBCLK          (36000000U)
