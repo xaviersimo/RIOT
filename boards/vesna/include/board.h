@@ -91,20 +91,9 @@ extern "C" {
  * @name Macros for controlling the on-board LEDs.
  * @{
  */
-#define LED_RED_ON
-#define LED_RED_OFF
-#define LED_RED_TOGGLE
 
 #define LED_GREEN_ON        (LED_GREEN_PORT->BSRR = (1<<LED_GREEN_PIN))
 #define LED_GREEN_OFF       (LED_GREEN_PORT->BRR = (1<<LED_GREEN_PIN))
-
-
-
-
-
-#define LED_ORANGE_ON
-#define LED_ORANGE_OFF
-#define LED_ORANGE_TOGGLE
 /** @} */
 
 /**
