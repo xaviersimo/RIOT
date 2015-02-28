@@ -30,48 +30,57 @@
 #define MSEC (1000)
 #define SEC (1000 * MSEC)
 
+#define ENABLE_DEBUG (0)
+#include "debug.h"
 
+#define STARTNODE    (1) //define pingpong node
 
 
 int main(void)
 {
 
-
 	/*Init program*/
 	printf("# ********************************************* \n");
 	printf("# ************ pingpong AT86RF231 ************* \n");
 	printf("# ********************************************* \n");
-
-
+#if STARTNODE
+	printf("# ***************** STARTNODE ***************** \n");
+	printf("# ********************************************* \n");
+#endif
 
 	transceiver_init(TRANSCEIVER_AT86RF231);
 	transceiver_start();
-
 	//at86rf231_initialize(NULL); //Use this function to config directly the radio modul withou use general transceiver functions
-
+	DEBUG("at86rf231 inizialized\n");
 
 	/*Chanel*/
 	//unsigned int chan = 6;
 	//at86rf231_set_channel(chan);
 	uint16_t channel = at86rf231_get_channel();
-	printf("channel is: %d\n", channel);
+	DEBUG("channel is: %d\n", channel);
 
 	/*adress*/
-	radio_address_t addr = 0x0001;
+#if STARTNODE
+	radio_address_t addr = 0xaaaa; //define source adress start node (Node_A)
+#else
+	radio_address_t addr = 0xcccc; //define source address destination node (Node_B)
+#endif
 	at86rf231_set_address(addr);
 	radio_address_t address = at86rf231_get_address();
-	printf("Source address is: %x \n", address);
+	DEBUG("Source address is: %x \n", address);
 
 	/*PAN*/
 	uint16_t set_pan = 0x0001, newpan;
 	newpan = at86rf231_set_pan(set_pan);
 	uint16_t pan = at86rf231_get_pan();
-	printf("source PAN is: %x \n", pan);
+	DEBUG("PAN is: %x \n", pan);
+
+	/*Define packet*/
+	//uint8_t payload[] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06};
+	//char payload[] = "hello";
+	char payload[] = "00";
 
 
-
-	/*send a packet*/
-	uint8_t payload[] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06};
 
 	/*Config MAC header */
 	ieee802154_frame_t frame;
@@ -80,33 +89,91 @@ int main(void)
 	frame.fcf.frame_pend = 0;
 	frame.fcf.ack_req = 1;
 	frame.dest_pan_id = pan;
-	frame.dest_addr[0] = 0x02;
-	frame.dest_addr[1] = 0x00;
 	frame.fcf.src_addr_m = 0x02;
 	frame.fcf.dest_addr_m = 0x02;
 	frame.payload = payload;
 	frame.payload_len = sizeof(payload);
-	printf("frame created, payload length: %d\n", frame.payload_len);
 
+#if STARTNODE
+	frame.dest_addr[0] = 0xcc;  //destination from start node (Node_A)
+	frame.dest_addr[1] = 0xcc;
+#else
+	frame.dest_addr[0] = 0xaa; //destination from destination node (Node_B)
+	frame.dest_addr[1] = 0xaa;
+#endif
 	at86rf231_packet_t packet;
 	packet.frame = frame;
-	printf("packet created\n");
+	DEBUG("packet created\n");
 
-	for (int i=0; i<5; i++)
-	{
-	at86rf231_send(&packet);
-	}
+	/*Ask Status*/
+	uint8_t status = at86rf231_get_status();
+	DEBUG("status: %x\n", status);
+
+	/*Define variables to receive a packet*/
+	msg_t m;
+	static msg_t msg_q[TRANSCEIVER_BUFFER_SIZE];
+	ieee802154_packet_t *p;
+    msg_init_queue(msg_q, TRANSCEIVER_BUFFER_SIZE);
+    int packet_num = 0;
+
+#if STARTNODE
+
+	at86rf231_send(&packet); //star node send first packet
+	DEBUG("1st packet sended\n");
+
+#endif
+
+
+	transceiver_register(TRANSCEIVER_AT86RF231, thread_getpid());
 
 while(1)
 {
-//	at86rf231_rx_handler();
+
+        DEBUG("waiting for receiving msg\n");
+        msg_receive(&m);
+
+	        if (m.type == PKT_PENDING) {
+
+	            p = (ieee802154_packet_t*) m.content.ptr;
+	            DEBUG("Got radio packet:\n");
+	            DEBUG("\tLength:\t%u\n", p->length);
+	            DEBUG("\tSrc:\t%u\n", (p->frame.src_addr[0])|(p->frame.src_addr[1]<<8));
+	            DEBUG("\tDst:\t%u\n", (p->frame.dest_addr[0])|(p->frame.dest_addr[1]<<8));
+	            DEBUG("\tLQI:\t%u\n", p->lqi);
+	            DEBUG("\tRSSI:\t%u\n", p->rssi);
+
+	            DEBUG("Payload Length:%u\n", p->frame.payload_len);
+	            DEBUG("Payload:%s \n", p->frame.payload);
+
+	            packet_num = atoi (p->frame.payload);
+
+	            p->processing--;
+
+	        }
+	        else if (m.type == ENOBUFFER) {
+	            puts("Transceiver buffer full");
+	        }
+	        else {
+	            puts("Unknown packet received");
+	        }
 
 
+	        packet_num++;
+	        printf("Payload received: %i\n", packet_num);
+	        if(packet_num == 1000)
+	        {
+	        	printf("test finish\n"); //stop the test
+	        	while(1)
+	        	{
 
+	        	}
 
+	        }
+	        sprintf(frame.payload,"%d" ,packet_num);
+	        packet.frame = frame;
+
+	    	at86rf231_send(&packet);
+	    	DEBUG("packet sended\n");
 }
-
-
-
 	return 0;
 }
