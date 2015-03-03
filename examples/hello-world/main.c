@@ -24,6 +24,8 @@
 #include "vtimer.h"
 #include "uart.h"
 #include "gpio.h"
+#include "thread.h"
+#include <ps.h>
 
 #define MSEC (1000)
 #define SEC (1000 * MSEC)
@@ -33,34 +35,23 @@ int main(void)
 
 	timex_t now;
 
-int i=12345;
 	while(1)
 	{
+		/*Test if leds are working*/
+		LED_GREEN_ON;
+		vtimer_usleep(SEC);
+		LED_GREEN_OFF;
+		vtimer_usleep(SEC);
 
-    //LED_GREEN_ON;
-    //vtimer_usleep(SEC);
-   // LED_GREEN_OFF;
+		/*Test UART*/
+		puts("hello world!");
+		printf("You are running RIOT on a(n) %s board.\n", RIOT_BOARD);
+		printf("This board features a(n) %s MCU.\n", RIOT_MCU);
 
-    //led_green_toogle();
-    //vtimer_usleep(SEC);
-
-    //printf("El ODR val: %x\n", LED_GREEN_PORT->ODR);
-    //puts("hello world!");
-   // printf("HELLO WORLD! %d and also %c\n", 123, 'c');
-    //printf("You are running RIOT on a(n) %s board.\n", RIOT_BOARD);
-    //printf("This board features a(n) %s MCU.\n", RIOT_MCU);
-
-
-      vtimer_now(&now);
-
-    printf("now is second: %i\n", now.seconds);
-    printf("now is microseconds: %i\n", now.microseconds);
-
-		vtimer_usleep(2*SEC);
-
-    printf("i  is: %i\n", i);
-    i = i/10;
-
+		/*TEST CURRENT TIME*/
+		vtimer_now(&now);
+		printf("now is second: %i\n", now.seconds);
+		printf("now is microseconds: %i\n", now.microseconds);
 	}
     return 0;
 }
