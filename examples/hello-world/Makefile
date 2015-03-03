@@ -16,5 +16,6 @@ CFLAGS += -DDEVELHELP
 QUIET ?= 1
 
 USEMODULE += vtimer
+USEMODULE += ps
 
 include $(RIOTBASE)/Makefile.include
